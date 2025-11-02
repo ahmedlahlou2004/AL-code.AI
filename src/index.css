@@ -1,122 +1,32 @@
-:root {
-  font-family: 'JetBrains Mono', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.6;
-  font-weight: 400;
-
-  color-scheme: dark;
-  color: #e0e0e0;
-  background-color: #121212;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  /* ألوان تفاعلية */
-  --primary: #00e5ff;
-  --secondary: #00ff99;
-  --editor-bg: #1e1e1e;
-  --output-bg: #212121;
-  --button-bg: #2e7d32;
-  --button-hover: #388e3c;
-  --button-focus: #66bb6a;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  flex-direction: row;
-  min-width: 320px;
-  min-height: 100vh;
-  background: radial-gradient(circle at top left, #0f2027, #203a43, #2c5364);
-  color: #e0e0e0;
-  overflow: hidden;
-}
-
-/* الروابط */
-a {
-  font-weight: 500;
-  color: var(--primary);
-  text-decoration: none;
-}
-a:hover {
-  color: var(--secondary);
-  text-decoration: underline;
-}
-
-/* تقسيم الشاشة */
-.editor {
-  flex: 1;
-  padding: 24px;
-  background-color: var(--editor-bg);
-  color: #ffffff;
-  border-right: 1px solid #333;
-  display: flex;
-  flex-direction: column;
-}
-
-.output {
-  flex: 1;
-  padding: 24px;
-  background-color: var(--output-bg);
-  color: #c8e6c9;
-  overflow-y: auto;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-/* عنوان */
-h1 {
-  font-size: 2.8em;
-  color: var(--primary);
-  margin-bottom: 16px;
-}
-
-/* زر التشغيل */
-button {
-  border-radius: 8px;
-  border: none;
-  padding: 0.8em 1.6em;
-  font-size: 1.1em;
-  font-weight: 600;
-  font-family: inherit;
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
-  color: #000;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
-  margin-top: 16px;
-}
-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(0, 255, 204, 0.8);
-}
-button:focus,
-button:focus-visible {
-  outline: 3px solid var(--button-focus);
-}
-
-/* textarea محرر */
-textarea {
-  flex: 1;
-  width: 100%;
-  background: #0b141a;
-  color: var(--secondary);
-  border: none;
-  border-radius: 8px;
-  padding: 1rem;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 1em;
-  resize: none;
-  outline: none;
-  box-shadow: inset 0 0 10px rgba(0, 255, 204, 0.2);
-}
-
-/* تجاهل الوضع الفاتح */
 @media (prefers-color-scheme: light) {
   :root {
-    background-color: #121212;
+    --primary: #0077cc;
+    --secondary: #00aa66;
+    --editor-bg: #f5f5f5;
+    --output-bg: #ffffff;
+    --button-bg: #007744;
+    --button-hover: #009955;
+    --button-focus: #33cc99;
+    color: #222;
+    background-color: #fff;
   }
-}  button {
-    background-color: #2e7d32;
+
+  body {
+    background: linear-gradient(to bottom right, #e0f7fa, #e8f5e9);
+    color: #222;
+  }
+
+  .editor {
+    color: #000;
+  }
+
+  .output {
+    color: #333;
+  }
+
+  textarea {
+    background: #fff;
+    color: #007744;
+    box-shadow: inset 0 0 10px rgba(0, 150, 136, 0.2);
   }
 }
