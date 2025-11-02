@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
+import logo from './assets/logo.jpg'; // ✅ تأكد أن المسار صحيح
 
 function App() {
   const [code, setCode] = useState(`# Write your Python code here\nprint("Hello!")`);
@@ -58,13 +59,24 @@ function App() {
     }}>
       {/* Top bar */}
       <header style={{
+        display: 'flex',
+        alignItems: 'center',
         padding: '10px 20px',
         backgroundColor: '#222',
         color: '#fff',
         fontSize: '1.5rem',
-        fontWeight: 'bold',
-        textAlign: 'center'
+        fontWeight: 'bold'
       }}>
+        <img
+          src={logo}
+          alt="AL-code.AI logo"
+          style={{
+            height: '40px',
+            width: '40px',
+            borderRadius: '50%',
+            marginRight: '15px'
+          }}
+        />
         AL-code.AI
       </header>
 
