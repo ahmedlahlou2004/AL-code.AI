@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-import './index.css'; // تأكد من استيراد ملف CSS
+import './index.css';
 
 function App() {
   const [code, setCode] = useState(`# Write Python code here\nprint("Hello, Med!")`);
   const [output, setOutput] = useState('');
   const [pyodide, setPyodide] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadPyodide = async () => {
-      const pyodideInstance = await window.loadPyodide({
-        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
-      });
-      setPyodide(pyodideInstance);
+      try {
+        const pyodideInstance = await window.loadPyodide({
+          indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
+        });
+        setPyodide(pyodideInstance);
+        setLoading(false);
+      } catch (err) {
+        setOutput("Failed to load Pyodide: " + err);
+      }
     };
     loadPyodide();
   }, []);
@@ -32,9 +38,9 @@ function App() {
 
     try {
       await pyodide.runPythonAsync(code);
-      setOutput(outputText || "Code executed, no output.");
+      setOutput(outputText || "✅ Code executed successfully, but no output.");
     } catch (err) {
-      setOutput(err.toString());
+      setOutput("⚠️ " + err.toString());
     }
   };
 
@@ -43,14 +49,20 @@ function App() {
       <div className="editor">
         <h1>🔷 Live Python Editor</h1>
         <Editor
-          height="300px"
+          height="400px"
           defaultLanguage="python"
           value={code}
           onChange={(value) => setCode(value)}
           theme="vs-dark"
+          options={{
+            fontSize: 16,
+            minimap: { enabled: false },
+            lineNumbers: "on",
+            automaticLayout: true,
+          }}
         />
-        <button onClick={runCode} style={{ marginTop: '10px' }}>
-          Run Code ▶️
+        <button onClick={runCode} disabled={loading}>
+          {loading ? "Loading Pyodide..." : "Run Code ▶️"}
         </button>
       </div>
       <div className="output">
@@ -61,4 +73,4 @@ function App() {
   );
 }
 
-export default App;
+export default App;export default App;
