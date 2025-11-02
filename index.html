@@ -14,8 +14,8 @@
         margin: 0;
         padding: 0;
         font-family: 'JetBrains Mono', monospace;
-        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-        color: #e0e0e0;
+        background-color: #fff700; /* خلفية صفراء */
+        color: #222222;            /* نص داكن */
         min-height: 100vh;
         display: flex;
         flex-direction: column;
@@ -29,7 +29,7 @@
         max-width: 1000px;
         padding: 20px;
         border-radius: 12px;
-        background-color: rgba(255, 255, 255, 0.05);
+        background-color: rgba(255, 255, 255, 0.1);
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
       }
 
@@ -40,12 +40,29 @@
 
       header h1 {
         font-size: 2rem;
-        color: #00c6ff;
+        color: #ff9800; /* عنوان برتقالي */
       }
 
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* أزرار ومحرر يمكن تعديلها لاحقًا */
+      button {
+        border-radius: 6px;
+        border: 1px solid #333;
+        padding: 0.6em 1.2em;
+        font-size: 1em;
+        font-weight: 500;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #005bb5;
       }
     </style>
   </head>
@@ -54,7 +71,9 @@
       <h1>Welcome to PyRun AI 🧠</h1>
       <p>Run Python code directly in your browser — powered by Pyodide & React</p>
     </header>
+
     <div id="root"></div>
+
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
