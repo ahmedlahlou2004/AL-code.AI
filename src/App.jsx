@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-import logo from './assets/logo.jpg'; // ✅ تأكد أن المسار صحيح
+import logo from './assets/logo.jpg'; // تأكد أن الصورة موجودة في src/assets/logo.jpg
 
 function App() {
   const [code, setCode] = useState(`# Write your Python code here\nprint("Hello!")`);
@@ -57,7 +57,7 @@ function App() {
       display: 'flex',
       flexDirection: 'column'
     }}>
-      {/* Top bar */}
+      {/* Top bar with logo */}
       <header style={{
         display: 'flex',
         alignItems: 'center',
