@@ -6,6 +6,7 @@ function App() {
   const [output, setOutput] = useState('');
   const [pyodide, setPyodide] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [executing, setExecuting] = useState(false);
 
   useEffect(() => {
     const loadPyodide = async () => {
@@ -16,7 +17,7 @@ function App() {
         setPyodide(pyodideInstance);
         setLoading(false);
       } catch (err) {
-        setOutput("⚠️ فشل تحميل Pyodide: " + err);
+        setOutput("⚠️ فشل تحميل Pyodide:\n" + err.message);
       }
     };
     loadPyodide();
@@ -24,20 +25,26 @@ function App() {
 
   const runCode = async () => {
     if (!pyodide) {
-      setOutput("جارٍ تحميل Pyodide...");
+      setOutput("⏳ جارٍ تحميل Pyodide...");
       return;
     }
+
+    setExecuting(true);
     let outputText = '';
+
     pyodide.setStdout({
       batched: (text) => {
         outputText += text;
       },
     });
+
     try {
       await pyodide.runPythonAsync(code);
-      setOutput(outputText || "✅ تم تنفيذ الكود بنجاح، لكن لا يوجد مخرجات.");
+      setOutput(outputText.trim() || "✅ تم تنفيذ الكود بنجاح، لكن لا يوجد مخرجات.");
     } catch (err) {
-      setOutput("⚠️ " + err.toString());
+      setOutput("❌ خطأ أثناء التنفيذ:\n" + err.message);
+    } finally {
+      setExecuting(false);
     }
   };
 
@@ -59,27 +66,31 @@ function App() {
           height="80%"
           defaultLanguage="python"
           value={code}
-          onChange={(value) => setCode(value)}
+          onChange={(value) => setCode(value || '')}
           theme="vs-dark"
-          options={{ fontSize: 16, minimap: { enabled: false }, automaticLayout: true }}
+          options={{
+            fontSize: 16,
+            minimap: { enabled: false },
+            automaticLayout: true
+          }}
         />
         <button
           onClick={runCode}
-          disabled={loading}
+          disabled={loading || executing}
           style={{
             marginTop: '10px',
             padding: '10px',
             border: 'none',
             borderRadius: '8px',
             fontWeight: '600',
-            cursor: 'pointer',
+            cursor: loading ? 'not-allowed' : 'pointer',
             background: loading ? '#ccc' : 'linear-gradient(90deg, #00e5ff, #00ff99)',
             color: loading ? '#666' : '#000',
             transition: 'all 0.3s ease',
             boxShadow: loading ? 'none' : '0 0 10px rgba(0,255,204,0.5)'
           }}
         >
-          {loading ? 'جارٍ التحميل...' : 'تشغيل الكود ▶️'}
+          {loading ? 'جارٍ التحميل...' : executing ? 'يتم التنفيذ...' : 'تشغيل الكود ▶️'}
         </button>
       </div>
 
@@ -94,7 +105,16 @@ function App() {
         flexDirection: 'column'
       }}>
         <h2 style={{ color: '#007acc' }}>📤 الناتج:</h2>
-        <pre style={{ whiteSpace: 'pre-wrap', flex: 1 }}>{output}</pre>
+        <pre style={{
+          whiteSpace: 'pre-wrap',
+          flex: 1,
+          backgroundColor: '#fff',
+          padding: '10px',
+          borderRadius: '6px',
+          border: '1px solid #ddd'
+        }}>
+          {output}
+        </pre>
       </div>
     </div>
   );
