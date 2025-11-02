@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 
 function App() {
-  const [code, setCode] = useState(`# اكتب كود بايثون هنا\nprint("مرحبًا يا مد!")`);
+  const [code, setCode] = useState(`# Write your Python code here\nprint("Hello!")`);
   const [output, setOutput] = useState('');
   const [pyodide, setPyodide] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -17,7 +17,7 @@ function App() {
         setPyodide(pyodideInstance);
         setLoading(false);
       } catch (err) {
-        setOutput("⚠️ فشل تحميل Pyodide:\n" + err.message);
+        setOutput("⚠️ Failed to load Pyodide:\n" + err.message);
       }
     };
     loadPyodide();
@@ -25,7 +25,7 @@ function App() {
 
   const runCode = async () => {
     if (!pyodide) {
-      setOutput("⏳ جارٍ تحميل Pyodide...");
+      setOutput("⏳ Loading Pyodide...");
       return;
     }
 
@@ -40,9 +40,9 @@ function App() {
 
     try {
       await pyodide.runPythonAsync(code);
-      setOutput(outputText.trim() || "✅ تم تنفيذ الكود بنجاح، لكن لا يوجد مخرجات.");
+      setOutput(outputText.trim() || "✅ Code executed successfully, but no output.");
     } catch (err) {
-      setOutput("❌ خطأ أثناء التنفيذ:\n" + err.message);
+      setOutput("❌ Execution error:\n" + err.message);
     } finally {
       setExecuting(false);
     }
@@ -55,12 +55,12 @@ function App() {
   return (
     <div style={{
       height: '100vh',
-      backgroundColor: '#fff700',
+      backgroundColor: '#dff6ff',
       fontFamily: 'JetBrains Mono, monospace',
       display: 'flex',
       flexDirection: 'column'
     }}>
-      {/* الشريط العلوي */}
+      {/* Top bar */}
       <header style={{
         padding: '10px 20px',
         backgroundColor: '#222',
@@ -68,10 +68,10 @@ function App() {
         fontSize: '1.5rem',
         fontWeight: 'bold'
       }}>
-        AI-code
+        AL-code.AI
       </header>
 
-      {/* المحتوى الرئيسي */}
+      {/* Main content */}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -79,7 +79,7 @@ function App() {
         padding: '20px',
         gap: '20px'
       }}>
-        {/* محرر الأكواد */}
+        {/* Editor panel */}
         <div style={{
           flex: 1,
           display: 'flex',
@@ -87,7 +87,6 @@ function App() {
           borderRight: '2px solid #ddd',
           paddingRight: '10px'
         }}>
-          <h2 style={{ color: '#007acc' }}>📝 اكتب كود بايثون</h2>
           <Editor
             height="100%"
             defaultLanguage="python"
@@ -102,7 +101,7 @@ function App() {
           />
         </div>
 
-        {/* زر التشغيل والمخرجات */}
+        {/* Output panel */}
         <div style={{
           flex: 1,
           display: 'flex',
@@ -128,7 +127,7 @@ function App() {
               boxShadow: loading ? 'none' : '0 0 10px rgba(0,255,204,0.5)'
             }}
           >
-            {loading ? 'جارٍ التحميل...' : executing ? 'يتم التنفيذ...' : 'تشغيل الكود ▶️'}
+            {loading ? 'Loading...' : executing ? 'Running...' : 'Run Code ▶️'}
           </button>
 
           <button
@@ -145,10 +144,10 @@ function App() {
               cursor: output ? 'pointer' : 'not-allowed'
             }}
           >
-            📋 نسخ الناتج
+            📋 Copy Output
           </button>
 
-          <h3 style={{ color: '#007acc' }}>📤 الناتج:</h3>
+          <h3 style={{ color: '#007acc' }}>📤 Output:</h3>
           <pre style={{
             whiteSpace: 'pre-wrap',
             flex: 1,
