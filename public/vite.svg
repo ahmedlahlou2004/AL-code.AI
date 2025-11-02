@@ -1,16 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 256 256">
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256">
   <defs>
-    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+    <radialGradient id="bgGradient" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#41D1FF" />
       <stop offset="100%" stop-color="#BD34FE" />
-    </linearGradient>
-    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FFEA83" />
-      <stop offset="100%" stop-color="#FFA800" />
-    </linearGradient>
+    </radialGradient>
   </defs>
-  <g>
-    <path d="M128 20 L200 140 L56 140 Z" fill="url(#grad1)" />
-    <path d="M56 140 L128 236 L200 140 Z" fill="url(#grad2)" />
-  </g>
+  <rect width="256" height="256" fill="url(#bgGradient)" />
+  <image href="logo.png" x="64" y="64" width="128" height="128" />
 </svg>
