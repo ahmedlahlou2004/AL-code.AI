@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "A creative and interactive online Python editor built with React and Vite",
+  "description": "An interactive Python code editor built with React and Vite",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -14,7 +14,8 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "@monaco-editor/react": "^4.7.0",
-    "axios": "^1.5.0"
+    "axios": "^1.5.0",
+    "pyodide": "^0.23.4" // ✅ أضفت مكتبة Pyodide لتشغيل Python في المتصفح
   },
   "devDependencies": {
     "vite": "^7.1.7",
@@ -37,7 +38,8 @@
     "react",
     "vite",
     "interactive",
-    "code"
+    "code",
+    "pyodide"
   ],
   "license": "MIT"
 }
