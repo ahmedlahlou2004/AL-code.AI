@@ -48,10 +48,6 @@ function App() {
     }
   };
 
-  const copyOutput = () => {
-    navigator.clipboard.writeText(output);
-  };
-
   return (
     <div style={{
       height: '100vh',
@@ -66,7 +62,8 @@ function App() {
         backgroundColor: '#222',
         color: '#fff',
         fontSize: '1.5rem',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        textAlign: 'center'
       }}>
         AL-code.AI
       </header>
@@ -124,45 +121,4 @@ function App() {
               background: loading ? '#ccc' : 'linear-gradient(90deg, #00e5ff, #00ff99)',
               color: loading ? '#666' : '#000',
               transition: 'all 0.3s ease',
-              boxShadow: loading ? 'none' : '0 0 10px rgba(0,255,204,0.5)'
-            }}
-          >
-            {loading ? 'Loading...' : executing ? 'Running...' : 'Run Code ▶️'}
-          </button>
-
-          <button
-            onClick={copyOutput}
-            disabled={!output}
-            style={{
-              alignSelf: 'flex-end',
-              marginBottom: '10px',
-              padding: '6px 12px',
-              fontSize: '0.9em',
-              backgroundColor: '#eee',
-              border: '1px solid #ccc',
-              borderRadius: '6px',
-              cursor: output ? 'pointer' : 'not-allowed'
-            }}
-          >
-            📋 Copy Output
-          </button>
-
-          <h3 style={{ color: '#007acc' }}>📤 Output:</h3>
-          <pre style={{
-            whiteSpace: 'pre-wrap',
-            flex: 1,
-            backgroundColor: '#f9f9f9',
-            padding: '10px',
-            borderRadius: '6px',
-            border: '1px solid #ddd',
-            overflowY: 'auto'
-          }}>
-            {output}
-          </pre>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default App;
+              boxShadow: loading
