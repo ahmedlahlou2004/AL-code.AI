@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
+import SignupForm from './SignupForm';
 
 function App() {
   const [code, setCode] = useState(`# Write your Python code here\nprint("Hello!")`);
@@ -7,6 +8,7 @@ function App() {
   const [pyodide, setPyodide] = useState(null);
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
+  const [signedUp, setSignedUp] = useState(false); // حالة التسجيل
 
   useEffect(() => {
     const loadPyodide = async () => {
@@ -48,6 +50,10 @@ function App() {
     }
   };
 
+  if (!signedUp) {
+    return <SignupForm onSignup={() => setSignedUp(true)} />;
+  }
+
   return (
     <div style={{
       height: '100vh',
@@ -56,7 +62,6 @@ function App() {
       display: 'flex',
       flexDirection: 'column'
     }}>
-      {/* Top bar */}
       <header style={{
         padding: '10px 20px',
         backgroundColor: '#222',
@@ -68,7 +73,6 @@ function App() {
         AL-code.AI
       </header>
 
-      {/* Main content */}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -76,7 +80,6 @@ function App() {
         padding: '20px',
         gap: '20px'
       }}>
-        {/* Editor panel */}
         <div style={{
           flex: 1,
           display: 'flex',
@@ -98,7 +101,6 @@ function App() {
           />
         </div>
 
-        {/* Output panel */}
         <div style={{
           flex: 1,
           display: 'flex',
