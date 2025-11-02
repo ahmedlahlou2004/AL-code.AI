@@ -3,7 +3,7 @@ import Editor from '@monaco-editor/react';
 import './index.css';
 
 function App() {
-  const [code, setCode] = useState(`# Write Python code here\nprint("Hello, Med!")`);
+  const [code, setCode] = useState(`# اكتب كود بايثون هنا\nprint("مرحبًا يا Med!")`);
   const [output, setOutput] = useState('');
   const [pyodide, setPyodide] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -17,7 +17,7 @@ function App() {
         setPyodide(pyodideInstance);
         setLoading(false);
       } catch (err) {
-        setOutput("Failed to load Pyodide: " + err);
+        setOutput("فشل تحميل Pyodide: " + err);
       }
     };
     loadPyodide();
@@ -25,7 +25,7 @@ function App() {
 
   const runCode = async () => {
     if (!pyodide) {
-      setOutput("Loading Pyodide...");
+      setOutput("جارٍ تحميل Pyodide...");
       return;
     }
 
@@ -38,7 +38,7 @@ function App() {
 
     try {
       await pyodide.runPythonAsync(code);
-      setOutput(outputText || "✅ Code executed successfully, but no output.");
+      setOutput(outputText || "✅ تم تنفيذ الكود بنجاح، لكن لا يوجد ناتج.");
     } catch (err) {
       setOutput("⚠️ " + err.toString());
     }
@@ -47,7 +47,8 @@ function App() {
   return (
     <div className="container">
       <div className="editor">
-        <h1>🔷 Live Python Editor</h1>
+        <h1>🧠 محرر بايثون التفاعلي</h1>
+        <p style={{ fontSize: '18px', color: '#888' }}>اكتب كودك وشغّله مباشرة في المتصفح!</p>
         <Editor
           height="400px"
           defaultLanguage="python"
@@ -61,16 +62,4 @@ function App() {
             automaticLayout: true,
           }}
         />
-        <button onClick={runCode} disabled={loading}>
-          {loading ? "Loading Pyodide..." : "Run Code ▶️"}
-        </button>
-      </div>
-      <div className="output">
-        <h2>📤 Output:</h2>
-        <pre>{output}</pre>
-      </div>
-    </div>
-  );
-}
-
-export default App;export default App;
+       
