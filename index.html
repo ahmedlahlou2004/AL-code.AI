@@ -5,7 +5,7 @@
     <link rel="icon" href="/vite.svg" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="An interactive Python editor built with React, Vite, and Pyodide" />
-    <title>🚀 PyRun AI — Run Python in Your Browser</title>
+    <title>AL-code.AI</title>
 
     <!-- Pyodide -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js" defer></script>
@@ -20,7 +20,7 @@
         margin: 0;
         padding: 0;
         font-family: 'JetBrains Mono', monospace;
-        background-color: #fff700;
+        background-color: #dff6ff;
         color: #222;
         min-height: 100vh;
         display: flex;
@@ -37,23 +37,6 @@
         border-radius: 12px;
         background-color: rgba(255, 255, 255, 0.15);
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-      }
-
-      header {
-        text-align: center;
-        margin-bottom: 20px;
-      }
-
-      header h1 {
-        font-size: 2rem;
-        color: #ff9800;
-        margin: 0;
-      }
-
-      header p {
-        margin: 0.5em 0 0;
-        font-size: 1rem;
-        color: #444;
       }
 
       @keyframes fadeIn {
@@ -85,11 +68,6 @@
     </style>
   </head>
   <body>
-    <header>
-      <h1>Welcome to PyRun AI 🧠</h1>
-      <p>Run Python code directly in your browser — powered by Pyodide & React</p>
-    </header>
-
     <div id="root"></div>
 
     <!-- React entry point -->
