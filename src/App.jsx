@@ -48,6 +48,10 @@ function App() {
     }
   };
 
+  const copyOutput = () => {
+    navigator.clipboard.writeText(output);
+  };
+
   return (
     <div style={{
       height: '100vh',
@@ -76,10 +80,16 @@ function App() {
         gap: '20px'
       }}>
         {/* محرر الأكواد */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          borderRight: '2px solid #ddd',
+          paddingRight: '10px'
+        }}>
           <h2 style={{ color: '#007acc' }}>📝 اكتب كود بايثون</h2>
           <Editor
-            height="80%"
+            height="100%"
             defaultLanguage="python"
             value={code}
             onChange={(value) => setCode(value || '')}
@@ -106,7 +116,7 @@ function App() {
             onClick={runCode}
             disabled={loading || executing}
             style={{
-              marginBottom: '20px',
+              marginBottom: '10px',
               padding: '10px',
               border: 'none',
               borderRadius: '8px',
@@ -119,6 +129,23 @@ function App() {
             }}
           >
             {loading ? 'جارٍ التحميل...' : executing ? 'يتم التنفيذ...' : 'تشغيل الكود ▶️'}
+          </button>
+
+          <button
+            onClick={copyOutput}
+            disabled={!output}
+            style={{
+              alignSelf: 'flex-end',
+              marginBottom: '10px',
+              padding: '6px 12px',
+              fontSize: '0.9em',
+              backgroundColor: '#eee',
+              border: '1px solid #ccc',
+              borderRadius: '6px',
+              cursor: output ? 'pointer' : 'not-allowed'
+            }}
+          >
+            📋 نسخ الناتج
           </button>
 
           <h3 style={{ color: '#007acc' }}>📤 الناتج:</h3>
