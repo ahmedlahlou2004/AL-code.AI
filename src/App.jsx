@@ -4,8 +4,7 @@ import './index.css'; // Import styles
 
 function App() {
   // Default Python code
-
-
+  const initialCode = 
   const [code, setCode] = useState(initialCode);
   const [output, setOutput] = useState('');
   const [pyodide, setPyodide] = useState(null);
