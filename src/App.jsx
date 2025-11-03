@@ -42,14 +42,12 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
 
-  // ✅ مرجع للمحرر
   const editorRef = useRef(null);
 
   const handleEditorMount = (editor) => {
     editorRef.current = editor;
   };
 
-  // ✅ دوال Undo / Redo
   const undoCode = () => {
     if (editorRef.current) {
       editorRef.current.trigger('keyboard', 'undo', null);
@@ -62,7 +60,6 @@ function App() {
     }
   };
 
-  // Load Pyodide + مكتبات إضافية
   useEffect(() => {
     const loadPyodide = async () => {
       try {
@@ -85,7 +82,6 @@ function App() {
     loadPyodide();
   }, []);
 
-  // دالة تشغيل الكود
   const runCode = async () => {
     if (!pyodide) {
       setOutput(prev => prev + "⏳ Pyodide is still loading...\n");
@@ -152,7 +148,6 @@ function App() {
     setOutput('');
   };
 
-  // ✅ دالة Restart داخلي
   const restartApp = () => {
     setCode(initialCode);
     setOutput('');
@@ -186,7 +181,6 @@ function App() {
         padding: '20px',
         gap: '20px'
       }}>
-        {/* Editor Area */}
         <div style={{
           flex: 1,
           minHeight: '40vh',
@@ -202,7 +196,7 @@ function App() {
             value={code}
             onChange={(value) => setCode(value || '')}
             theme="vs-dark"
-            onMount={handleEditorMount}   // ✅ مهم
+            onMount={handleEditorMount}
             options={{
               fontSize: 16,
               minimap: { enabled: false },
@@ -212,7 +206,6 @@ function App() {
           />
         </div>
 
-        {/* Output Area */}
         <div style={{
           flex: 1,
           minHeight: '40vh',
@@ -223,7 +216,7 @@ function App() {
           padding: '20px',
           boxShadow: '0 4px 15px rgba(0,0,0,0.15)'
         }}>
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap' }}>
             <button onClick={runCode} disabled={loading || executing}
               style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700',
                 background: loading ? '#ccc' : 'linear-gradient(45deg, #007bff, #00ff99)',
@@ -255,19 +248,22 @@ function App() {
               Redo ↪️
             </button>
 
+            <button
+              onClick={() => navigator.clipboard.writeText(code)}
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700',
+                background: '#20c997', color: '#fff' }}>
+              Copy Code 📑
+            </button>
+
+            <button
+              onClick={() => navigator.clipboard.writeText(output)}
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700',
+                background: '#6610f2', color: '#fff' }}>
+              Copy Output 📋
+            </button>
+
             <PasteButton onPaste={(text) => setCode(text)} />
           </div>
           
           <h3 style={{ fontSize: '1.2rem', color: '#333', marginBottom: '10px',
-            borderBottom: '2px solid #eee', paddingBottom: '5px' }}>
-            Output Console
-          </h3>
-
-          <pre className="output-pre">{output}</pre>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default App;
+            border
