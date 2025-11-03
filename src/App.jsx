@@ -4,10 +4,7 @@ import './index.css'; // Import styles
 
 function App() {
   // Default Python code
-  const initialCode = `# Write your Python code here (Hello World!)
 
-
-# Running twice will separate outputs with a visual separator`;
 
   const [code, setCode] = useState(initialCode);
   const [output, setOutput] = useState('');
