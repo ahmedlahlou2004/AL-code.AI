@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import './index.css'; // Import styles
 
@@ -42,6 +42,26 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
 
+  // ✅ مرجع للمحرر
+  const editorRef = useRef(null);
+
+  const handleEditorMount = (editor) => {
+    editorRef.current = editor;
+  };
+
+  // ✅ دوال Undo / Redo
+  const undoCode = () => {
+    if (editorRef.current) {
+      editorRef.current.trigger('keyboard', 'undo', null);
+    }
+  };
+
+  const redoCode = () => {
+    if (editorRef.current) {
+      editorRef.current.trigger('keyboard', 'redo', null);
+    }
+  };
+
   // Load Pyodide + مكتبات إضافية
   useEffect(() => {
     const loadPyodide = async () => {
@@ -54,7 +74,6 @@ function App() {
           indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
         });
 
-        // ✅ تحميل مكتبات إضافية
         await pyodideInstance.loadPackage(["numpy", "matplotlib", "pandas"]);
 
         setPyodide(pyodideInstance);
@@ -135,9 +154,9 @@ function App() {
 
   // ✅ دالة Restart داخلي
   const restartApp = () => {
-    setCode(initialCode);   // يرجع الكود الافتراضي
-    setOutput('');          // يمسح المخرجات
-    setExecuting(false);    // يوقف أي تنفيذ
+    setCode(initialCode);
+    setOutput('');
+    setExecuting(false);
   };
 
   return (
@@ -183,6 +202,7 @@ function App() {
             value={code}
             onChange={(value) => setCode(value || '')}
             theme="vs-dark"
+            onMount={handleEditorMount}   // ✅ مهم
             options={{
               fontSize: 16,
               minimap: { enabled: false },
@@ -204,80 +224,46 @@ function App() {
           boxShadow: '0 4px 15px rgba(0,0,0,0.15)'
         }}>
           <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-            <button
-              onClick={runCode}
-              disabled={loading || executing}
-              style={{
-                flex: 1,
-                padding: '10px',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: '700',
-                cursor: loading ? 'not-allowed' : 'pointer',
+            <button onClick={runCode} disabled={loading || executing}
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700',
                 background: loading ? '#ccc' : 'linear-gradient(45deg, #007bff, #00ff99)',
-                color: loading ? '#666' : '#fff',
-                transition: 'all 0.3s ease',
-                transform: executing ? 'scale(0.98)' : 'scale(1)',
-              }}
-            >
+                color: loading ? '#666' : '#fff' }}>
               {loading ? 'Loading...' : executing ? 'Running...' : 'Run Code 🚀'}
             </button>
 
-            <button
-              onClick={clearOutput}
-              style={{
-                flex: 1,
-                padding: '10px',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                background: '#ff4d4d',
-                color: '#fff',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 4px 10px rgba(255, 77, 77, 0.4)'
-              }}
-            >
+            <button onClick={clearOutput}
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700',
+                background: '#ff4d4d', color: '#fff' }}>
               Clear Output 🗑️
             </button>
 
-            {/* زر Restart */}
-            <button
-              onClick={restartApp}
-              style={{
-                flex: 1,
-                padding: '10px',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                background: '#6c757d',
-                color: '#fff',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 4px 10px rgba(108, 117, 125, 0.4)'
-              }}
-            >
+            <button onClick={restartApp}
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700',
+                background: '#6c757d', color: '#fff' }}>
               Restart 🔄
             </button>
 
-            {/* زر اللصق */}
+            <button onClick={undoCode}
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700',
+                background: '#ffc107', color: '#000' }}>
+              Undo ↩️
+            </button>
+
+            <button onClick={redoCode}
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700',
+                background: '#17a2b8', color: '#fff' }}>
+              Redo ↪️
+            </button>
+
             <PasteButton onPaste={(text) => setCode(text)} />
           </div>
           
-          <h3 style={{
-            fontSize: '1.2rem',
-            color: '#333',
-            marginBottom: '10px',
-            borderBottom: '2px solid #eee',
-            paddingBottom: '5px'
-          }}>
+          <h3 style={{ fontSize: '1.2rem', color: '#333', marginBottom: '10px',
+            borderBottom: '2px solid #eee', paddingBottom: '5px' }}>
             Output Console
           </h3>
 
-          {/* Output Display */}
-          <pre className="output-pre">
-            {output}
-          </pre>
+          <pre className="output-pre">{output}</pre>
         </div>
       </div>
     </div>
