@@ -19,7 +19,7 @@ function App() {
         setPyodide(pyodideInstance);
         setLoading(false);
       } catch (err) {
-        setOutput("⚠️ Failed to load Pyodide:\n" + err.message);
+        setOutput("⚠️ Failed to load Pyodide:\n" + err.message + "\n");
       }
     };
     loadPyodide();
@@ -27,7 +27,7 @@ function App() {
 
   const runCode = async () => {
     if (!pyodide) {
-      setOutput("⏳ Loading Pyodide...");
+      setOutput(prev => prev + "⏳ Loading Pyodide...\n");
       return;
     }
 
@@ -42,9 +42,13 @@ function App() {
 
     try {
       await pyodide.runPythonAsync(code);
-      setOutput(outputText.trim() || "✅ Code executed successfully, but no output.");
+      setOutput(prev =>
+        prev +
+        (outputText.trim() || "✅ Code executed successfully, but no output.") +
+        "\n"
+      );
     } catch (err) {
-      setOutput("❌ Execution error:\n" + err.message);
+      setOutput(prev => prev + "❌ Execution error:\n" + err.message + "\n");
     } finally {
       setExecuting(false);
     }
