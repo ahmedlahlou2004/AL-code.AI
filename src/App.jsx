@@ -35,7 +35,6 @@ function PasteButton({ onPaste }) {
 }
 
 function App() {
-  // Default Python code
   const initialCode = `# Write your Python code here (Hello World!)`;
   const [code, setCode] = useState(initialCode);
   const [output, setOutput] = useState('');
@@ -63,6 +62,7 @@ function App() {
     loadPyodide();
   }, []);
 
+  // ✅ نسخة معدلة من runCode
   const runCode = async () => {
     if (!pyodide) {
       setOutput(prev => prev + "⏳ Pyodide is still loading...\n");
@@ -70,37 +70,47 @@ function App() {
     }
 
     setExecuting(true);
-    let outputText = '';
-    let errorText = '';
+    let outputLines = [];
+    let errorLines = [];
 
-    // Redirect stdout and stderr
-    pyodide.setStdout({ batched: (text) => { outputText += text; } });
-    pyodide.setStderr({ batched: (text) => { errorText += text; } });
+    pyodide.setStdout({
+      batched: (text) => {
+        const clean = text.endsWith("\n") ? text : text + "\n";
+        outputLines.push(clean);
+      }
+    });
+
+    pyodide.setStderr({
+      batched: (text) => {
+        const clean = text.endsWith("\n") ? text : text + "\n";
+        errorLines.push(clean);
+      }
+    });
 
     try {
       const separator = "\n----------\n";
 
       await pyodide.runPythonAsync(code);
 
-      if (errorText.trim()) {
+      if (errorLines.length > 0) {
         setOutput(prev =>
           prev +
           separator +
           "❌ Execution Error:\n" +
-          errorText.trim() +
+          errorLines.join("") +
           "\n--- [ Execution End with Error ] ---\n\n"
         );
       } else {
         setOutput(prev =>
           prev +
           separator +
-          (outputText.trim() || "✅ Executed successfully, but no output.") +
+          (outputLines.join("") || "✅ Executed successfully, but no output.") +
           "\n----------\n\n"
         );
       }
 
     } catch (err) {
-      const errorOutput = errorText.trim() || err.message;
+      const errorOutput = errorLines.join("") || err.message;
       setOutput(prev =>
         prev +
         "\n----------\n" +
@@ -221,27 +231,4 @@ function App() {
             </button>
 
             {/* زر اللصق */}
-            <PasteButton onPaste={(text) => setCode(text)} />
-          </div>
-          
-          <h3 style={{
-            fontSize: '1.2rem',
-            color: '#333',
-            marginBottom: '10px',
-            borderBottom: '2px solid #eee',
-            paddingBottom: '5px'
-          }}>
-            Output Console
-          </h3>
-
-          {/* Output Display */}
-          <pre className="output-pre">
-            {output}
-          </pre>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default App;
+            <PasteButton onPaste={(text) =>
