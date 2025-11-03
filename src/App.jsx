@@ -4,7 +4,7 @@ import './index.css'; // Import styles
 
 function App() {
   // Default Python code
-  const initialCode = 
+  const initialCode = `# Write your Python code here (Hello World!)`;
   const [code, setCode] = useState(initialCode);
   const [output, setOutput] = useState('');
   const [pyodide, setPyodide] = useState(null);
