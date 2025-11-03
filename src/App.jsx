@@ -264,6 +264,37 @@ function App() {
 
             <PasteButton onPaste={(text) => setCode(text)} />
           </div>
-          
-          <h3 style={{ fontSize: '1.2rem', color: '#333', marginBottom: '10px',
-            border
+
+          <h3
+            style={{
+              fontSize: '1.2rem',
+              color: '#333',
+              marginBottom: '10px',
+              borderBottom: '2px solid #007bff',
+              paddingBottom: '5px'
+            }}
+          >
+            Output:
+          </h3>
+
+          <pre
+            style={{
+              flex: 1,
+              backgroundColor: '#f8f9fa',
+              borderRadius: '8px',
+              padding: '15px',
+              overflowY: 'auto',
+              whiteSpace: 'pre-wrap',
+              wordWrap: 'break-word',
+              border: '1px solid #ccc'
+            }}
+          >
+            {output}
+          </pre>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
