@@ -5,8 +5,7 @@ import './index.css'; // Import styles
 function App() {
   // Default Python code
   const initialCode = `# Write your Python code here (Hello World!)
-print("Line 1")
-print("Line 2")
+
 
 # Running twice will separate outputs with a visual separator`;
 
@@ -51,7 +50,7 @@ print("Line 2")
     pyodide.setStderr({ batched: (text) => { errorText += text; } });
 
     try {
-      const separator = "\n--- [ Execution Start ] ---\n";
+      const separator = "\n----------\n";
 
       await pyodide.runPythonAsync(code);
 
@@ -68,7 +67,7 @@ print("Line 2")
           prev +
           separator +
           (outputText.trim() || "✅ Executed successfully, but no output.") +
-          "\n--- [ Execution End ] ---\n\n"
+          "\n----------\n\n"
         );
       }
 
@@ -76,7 +75,7 @@ print("Line 2")
       const errorOutput = errorText.trim() || err.message;
       setOutput(prev =>
         prev +
-        "\n--- [ Execution Start ] ---\n" +
+        "\n----------\n" +
         "❌ Unexpected Error:\n" +
         errorOutput +
         "\n--- [ Execution End with Error ] ---\n\n"
