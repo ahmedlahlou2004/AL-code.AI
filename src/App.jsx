@@ -2,6 +2,38 @@ import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import './index.css'; // Import styles
 
+// زر اللصق
+function PasteButton({ onPaste }) {
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      onPaste(text);
+    } catch (err) {
+      console.error("فشل الوصول إلى الحافظة:", err);
+    }
+  };
+
+  return (
+    <button
+      onClick={handlePaste}
+      style={{
+        flex: 1,
+        padding: '10px',
+        border: 'none',
+        borderRadius: '8px',
+        fontWeight: '700',
+        cursor: 'pointer',
+        background: '#28a745',
+        color: '#fff',
+        transition: 'all 0.3s ease',
+        boxShadow: '0 4px 10px rgba(40, 167, 69, 0.4)'
+      }}
+    >
+      Paste 📋
+    </button>
+  );
+}
+
 function App() {
   // Default Python code
   const initialCode = `# Write your Python code here (Hello World!)`;
@@ -187,6 +219,9 @@ function App() {
             >
               Clear Output 🗑️
             </button>
+
+            {/* زر اللصق */}
+            <PasteButton onPaste={(text) => setCode(text)} />
           </div>
           
           <h3 style={{
