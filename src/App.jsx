@@ -42,7 +42,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
 
-  // Load Pyodide
+  // Load Pyodide + مكتبات إضافية
   useEffect(() => {
     const loadPyodide = async () => {
       try {
@@ -53,6 +53,10 @@ function App() {
         const pyodideInstance = await window.loadPyodide({
           indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
         });
+
+        // ✅ تحميل مكتبات إضافية
+        await pyodideInstance.loadPackage(["numpy", "matplotlib", "pandas"]);
+
         setPyodide(pyodideInstance);
         setLoading(false);
       } catch (err) {
@@ -62,7 +66,7 @@ function App() {
     loadPyodide();
   }, []);
 
-  // ✅ نسخة معدلة من runCode
+  // دالة تشغيل الكود
   const runCode = async () => {
     if (!pyodide) {
       setOutput(prev => prev + "⏳ Pyodide is still loading...\n");
