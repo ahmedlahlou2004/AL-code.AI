@@ -163,4 +163,14 @@ function App() {
             padding: '10px',
             borderRadius: '6px',
             border: '1px solid #ddd',
-            overflowY: 'auto
+            overflowY: 'auto'
+          }}>
+            {output}
+          </pre>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
