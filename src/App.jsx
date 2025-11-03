@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
-import './index.css'; // Import styles
+import './index.css';
 
 // زر اللصق
 function PasteButton({ onPaste }) {
@@ -9,7 +9,7 @@ function PasteButton({ onPaste }) {
       const text = await navigator.clipboard.readText();
       onPaste(text);
     } catch (err) {
-      console.error("فشل الوصول إلى الحافظة:", err);
+      console.error("Clipboard access failed:", err);
     }
   };
 
@@ -35,12 +35,15 @@ function PasteButton({ onPaste }) {
 }
 
 function App() {
-  const initialCode = `# Write your Python code here (Hello World!)`;
+  const initialCode = `# Write your Python code here
+print("Hello, AL-Code.AI!")`;
+
   const [code, setCode] = useState(initialCode);
   const [output, setOutput] = useState('');
   const [pyodide, setPyodide] = useState(null);
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
+  const [theme, setTheme] = useState('vs-dark');
 
   const editorRef = useRef(null);
 
@@ -48,23 +51,17 @@ function App() {
     editorRef.current = editor;
   };
 
-  const undoCode = () => {
-    if (editorRef.current) {
-      editorRef.current.trigger('keyboard', 'undo', null);
-    }
-  };
+  const undoCode = () => editorRef.current?.trigger('keyboard', 'undo', null);
+  const redoCode = () => editorRef.current?.trigger('keyboard', 'redo', null);
 
-  const redoCode = () => {
-    if (editorRef.current) {
-      editorRef.current.trigger('keyboard', 'redo', null);
-    }
-  };
-
+  // ✅ تحميل Pyodide (محسَّن للتخزين المؤقت)
   useEffect(() => {
     const loadPyodide = async () => {
       try {
-        if (!window.loadPyodide) {
-          throw new Error("Pyodide script not loaded in index.html. Check the <script> tag.");
+        if (window._pyodideInstance) {
+          setPyodide(window._pyodideInstance);
+          setLoading(false);
+          return;
         }
 
         const pyodideInstance = await window.loadPyodide({
@@ -72,7 +69,7 @@ function App() {
         });
 
         await pyodideInstance.loadPackage(["numpy", "matplotlib", "pandas"]);
-
+        window._pyodideInstance = pyodideInstance;
         setPyodide(pyodideInstance);
         setLoading(false);
       } catch (err) {
@@ -82,6 +79,16 @@ function App() {
     loadPyodide();
   }, []);
 
+  // 💾 الحفظ التلقائي للكود
+  useEffect(() => {
+    const saved = localStorage.getItem('user_code');
+    if (saved) setCode(saved);
+  }, []);
+  useEffect(() => {
+    localStorage.setItem('user_code', code);
+  }, [code]);
+
+  // 🚀 تنفيذ الكود مع حساب الوقت
   const runCode = async () => {
     if (!pyodide) {
       setOutput(prev => prev + "⏳ Pyodide is still loading...\n");
@@ -93,48 +100,42 @@ function App() {
     let errorLines = [];
 
     pyodide.setStdout({
-      batched: (text) => {
-        const clean = text.endsWith("\n") ? text : text + "\n";
-        outputLines.push(clean);
-      }
+      batched: (text) => outputLines.push(text.endsWith("\n") ? text : text + "\n")
     });
-
     pyodide.setStderr({
-      batched: (text) => {
-        const clean = text.endsWith("\n") ? text : text + "\n";
-        errorLines.push(clean);
-      }
+      batched: (text) => errorLines.push(text.endsWith("\n") ? text : text + "\n")
     });
 
     try {
-      const separator = "\n----------\n";
-
+      const start = performance.now();
       await pyodide.runPythonAsync(code);
+      const end = performance.now();
 
+      const time = (end - start).toFixed(2);
+
+      const separator = "\n----------\n";
       if (errorLines.length > 0) {
         setOutput(prev =>
           prev +
           separator +
           "❌ Execution Error:\n" +
           errorLines.join("") +
-          "\n--- [ Execution End with Error ] ---\n\n"
+          `\n--- [ Execution End with Error in ${time} ms ] ---\n\n`
         );
       } else {
         setOutput(prev =>
           prev +
           separator +
           (outputLines.join("") || "✅ Executed successfully, but no output.") +
-          "\n----------\n\n"
+          `\n⏱ Execution time: ${time} ms\n----------\n\n`
         );
       }
-
     } catch (err) {
-      const errorOutput = errorLines.join("") || err.message;
       setOutput(prev =>
         prev +
         "\n----------\n" +
         "❌ Unexpected Error:\n" +
-        errorOutput +
+        err.message +
         "\n--- [ Execution End with Error ] ---\n\n"
       );
     } finally {
@@ -144,10 +145,7 @@ function App() {
     }
   };
 
-  const clearOutput = () => {
-    setOutput('');
-  };
-
+  const clearOutput = () => setOutput('');
   const restartApp = () => {
     setCode(initialCode);
     setOutput('');
@@ -157,23 +155,30 @@ function App() {
   return (
     <div style={{
       height: '100vh',
-      backgroundColor: '#dff6ff',
+      backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#e8f5ff',
       fontFamily: 'Arial, sans-serif',
       display: 'flex',
       flexDirection: 'column'
     }}>
+      {/* 🔹 رأس الصفحة */}
       <header style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         padding: '10px 20px',
-        backgroundColor: '#007bff',
+        background: theme === 'vs-dark' 
+          ? 'linear-gradient(90deg, #007bff, #00ff99)' 
+          : 'linear-gradient(90deg, #0066cc, #00cc88)',
         color: '#fff',
-        fontSize: '1.5rem',
         fontWeight: 'bold',
-        textAlign: 'center',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        fontSize: '1.3rem',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
       }}>
-        AL-code.AI - Python Editor
+        <span>⚡ AL-Code.AI</span>
+        <span style={{ fontSize: '1rem', opacity: 0.9 }}>Python Web IDE</span>
       </header>
 
+      {/* 🔹 محتوى الصفحة */}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -181,11 +186,10 @@ function App() {
         padding: '20px',
         gap: '20px'
       }}>
+        {/* المحرر */}
         <div style={{
           flex: 1,
           minHeight: '40vh',
-          display: 'flex',
-          flexDirection: 'column',
           borderRadius: '10px',
           overflow: 'hidden',
           boxShadow: '0 4px 15px rgba(0,0,0,0.15)'
@@ -195,7 +199,7 @@ function App() {
             defaultLanguage="python"
             value={code}
             onChange={(value) => setCode(value || '')}
-            theme="vs-dark"
+            theme={theme}
             onMount={handleEditorMount}
             options={{
               fontSize: 16,
@@ -206,89 +210,92 @@ function App() {
           />
         </div>
 
+        {/* الأزرار + الإخراج */}
         <div style={{
           flex: 1,
-          minHeight: '40vh',
           display: 'flex',
           flexDirection: 'column',
-          backgroundColor: '#fff',
+          backgroundColor: theme === 'vs-dark' ? '#161b22' : '#fff',
           borderRadius: '10px',
           padding: '20px',
           boxShadow: '0 4px 15px rgba(0,0,0,0.15)'
         }}>
           <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap' }}>
             <button onClick={runCode} disabled={loading || executing}
-              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700',
+              style={{
+                flex: 1,
+                padding: '10px',
+                borderRadius: '8px',
+                fontWeight: '700',
                 background: loading ? '#ccc' : 'linear-gradient(45deg, #007bff, #00ff99)',
-                color: loading ? '#666' : '#fff' }}>
+                color: loading ? '#666' : '#fff'
+              }}>
               {loading ? 'Loading...' : executing ? 'Running...' : 'Run Code 🚀'}
             </button>
 
             <button onClick={clearOutput}
-              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700',
-                background: '#ff4d4d', color: '#fff' }}>
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700', background: '#ff4d4d', color: '#fff' }}>
               Clear Output 🗑️
             </button>
 
             <button onClick={restartApp}
-              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700',
-                background: '#6c757d', color: '#fff' }}>
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700', background: '#6c757d', color: '#fff' }}>
               Restart 🔄
             </button>
 
             <button onClick={undoCode}
-              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700',
-                background: '#ffc107', color: '#000' }}>
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700', background: '#ffc107', color: '#000' }}>
               Undo ↩️
             </button>
 
             <button onClick={redoCode}
-              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700',
-                background: '#17a2b8', color: '#fff' }}>
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700', background: '#17a2b8', color: '#fff' }}>
               Redo ↪️
             </button>
 
             <button
               onClick={() => navigator.clipboard.writeText(code)}
-              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700',
-                background: '#20c997', color: '#fff' }}>
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700', background: '#20c997', color: '#fff' }}>
               Copy Code 📑
             </button>
 
             <button
               onClick={() => navigator.clipboard.writeText(output)}
-              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700',
-                background: '#6610f2', color: '#fff' }}>
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700', background: '#6610f2', color: '#fff' }}>
               Copy Output 📋
+            </button>
+
+            <button
+              onClick={() => setTheme(theme === 'vs-dark' ? 'light' : 'vs-dark')}
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: '700', background: '#343a40', color: '#fff' }}>
+              {theme === 'vs-dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
             </button>
 
             <PasteButton onPaste={(text) => setCode(text)} />
           </div>
 
-          <h3
-            style={{
-              fontSize: '1.2rem',
-              color: '#333',
-              marginBottom: '10px',
-              borderBottom: '2px solid #007bff',
-              paddingBottom: '5px'
-            }}
-          >
+          <h3 style={{
+            fontSize: '1.2rem',
+            color: theme === 'vs-dark' ? '#00ff99' : '#007bff',
+            marginBottom: '10px',
+            borderBottom: `2px solid ${theme === 'vs-dark' ? '#00ff99' : '#007bff'}`,
+            paddingBottom: '5px'
+          }}>
             Output:
           </h3>
 
-          <pre
-            style={{
-              flex: 1,
-              backgroundColor: '#f8f9fa',
-              borderRadius: '8px',
-              padding: '15px',
-              overflowY: 'auto',
-              whiteSpace: 'pre-wrap',
-              wordWrap: 'break-word',
-              border: '1px solid #ccc'
-            }}
-          >
+          <pre style={{
+            flex: 1,
+            backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#f8f9fa',
+            color: output.includes('❌') ? '#ff4d4d' : '#00ff88',
+            borderRadius: '8px',
+            padding: '15px',
+            overflowY: 'auto',
+            whiteSpace: 'pre-wrap',
+            wordWrap: 'break-word',
+            border: '1px solid #222',
+            fontFamily: 'JetBrains Mono, monospace'
+          }}>
             {output}
           </pre>
         </div>
