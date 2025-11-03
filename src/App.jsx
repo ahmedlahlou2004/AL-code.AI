@@ -1,33 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-import './index.css'; // استيراد التنسيقات
+import './index.css'; // Import styles
 
 function App() {
-  // الكود الافتراضي
-  const initialCode = `# اكتب كود بايثون هنا (مرحباً بالعالم!)\nprint("السطر الأول")\nprint("السطر الثاني")\n\n# عند التنفيذ مرتين، سيتم الفصل بينهما بفاصل مرئي`;
-  
+  // Default Python code
+  const initialCode = `# Write your Python code here (Hello World!)
+print("Line 1")
+print("Line 2")
+
+# Running twice will separate outputs with a visual separator`;
+
   const [code, setCode] = useState(initialCode);
   const [output, setOutput] = useState('');
   const [pyodide, setPyodide] = useState(null);
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
 
-  // Pyodide Loading Logic
+  // Load Pyodide
   useEffect(() => {
     const loadPyodide = async () => {
       try {
-        // تأكد من وجود دالة loadPyodide المتاحة في النافذة
         if (!window.loadPyodide) {
-             throw new Error("Pyodide script not loaded in index.html. Check the <script> tag.");
+          throw new Error("Pyodide script not loaded in index.html. Check the <script> tag.");
         }
-        
+
         const pyodideInstance = await window.loadPyodide({
           indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
         });
         setPyodide(pyodideInstance);
         setLoading(false);
       } catch (err) {
-        setOutput("⚠️ فشل في تحميل Pyodide:\n" + err.message + "\n");
+        setOutput("⚠️ Failed to load Pyodide:\n" + err.message + "\n");
       }
     };
     loadPyodide();
@@ -35,63 +38,52 @@ function App() {
 
   const runCode = async () => {
     if (!pyodide) {
-      setOutput(prev => prev + "⏳ Pyodide قيد التحميل...\n");
+      setOutput(prev => prev + "⏳ Pyodide is still loading...\n");
       return;
     }
 
     setExecuting(true);
     let outputText = '';
     let errorText = '';
-    
-    // توجيه إخراج الكونسول والخطأ لـ Pyodide
-    pyodide.setStdout({
-      batched: (text) => { outputText += text; },
-    });
-    pyodide.setStderr({
-        batched: (text) => { errorText += text; },
-    });
+
+    // Redirect stdout and stderr
+    pyodide.setStdout({ batched: (text) => { outputText += text; } });
+    pyodide.setStderr({ batched: (text) => { errorText += text; } });
 
     try {
-      // 1. إضافة فاصل مرئي لنتيجة التنفيذ الجديدة
-      const separator = "\n--- [ بـدايـة التنـفيـذ ] ---\n";
-      
-      // 2. تشغيل الكود
+      const separator = "\n--- [ Execution Start ] ---\n";
+
       await pyodide.runPythonAsync(code);
-      
-      // 3. تحديث حالة الإخراج
+
       if (errorText.trim()) {
-          // إذا كان هناك خطأ (stderr)
-          setOutput(prev => 
-              prev + 
-              separator + 
-              "❌ خطأ في التنفيذ:\n" + 
-              errorText.trim() + 
-              "\n--- [ نـهـايـة التنـفيـذ بخطأ ] ---\n\n"
-          );
+        setOutput(prev =>
+          prev +
+          separator +
+          "❌ Execution Error:\n" +
+          errorText.trim() +
+          "\n--- [ Execution End with Error ] ---\n\n"
+        );
       } else {
-          // إذا تم بنجاح (stdout)
-          setOutput(prev =>
-              prev +
-              separator +
-              (outputText.trim() || "✅ تم التنفيذ بنجاح، لكن لا يوجد إخراج.") +
-              "\n--- [ نـهـايـة التنـفيـذ ] ---\n\n"
-          );
+        setOutput(prev =>
+          prev +
+          separator +
+          (outputText.trim() || "✅ Executed successfully, but no output.") +
+          "\n--- [ Execution End ] ---\n\n"
+        );
       }
-      
+
     } catch (err) {
-      // التقاط الأخطاء غير المتوقعة (مثل SyntaxError)
       const errorOutput = errorText.trim() || err.message;
-      setOutput(prev => 
-        prev + 
-        "\n--- [ بـدايـة التنـفيـذ ] ---\n" +
-        "❌ خطأ غير متوقع:\n" + 
-        errorOutput + 
-        "\n--- [ نـهـايـة التنـفيـذ بخطأ ] ---\n\n"
+      setOutput(prev =>
+        prev +
+        "\n--- [ Execution Start ] ---\n" +
+        "❌ Unexpected Error:\n" +
+        errorOutput +
+        "\n--- [ Execution End with Error ] ---\n\n"
       );
     } finally {
       setExecuting(false);
-      // إعادة تعيين الإخراج والخطأ للوضع الافتراضي
-      pyodide.setStdout(window.console.log); 
+      pyodide.setStdout(window.console.log);
       pyodide.setStderr(window.console.error);
     }
   };
@@ -104,7 +96,7 @@ function App() {
     <div style={{
       height: '100vh',
       backgroundColor: '#dff6ff',
-      fontFamily: 'Cairo, sans-serif', // استخدام الخط العربي هنا
+      fontFamily: 'Arial, sans-serif',
       display: 'flex',
       flexDirection: 'column'
     }}>
@@ -117,13 +109,13 @@ function App() {
         textAlign: 'center',
         boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
       }}>
-        AL-code.AI - محرر بايثون
+        AL-code.AI - Python Editor
       </header>
 
       <div style={{
         flex: 1,
         display: 'flex',
-        flexDirection: 'column', // Layout Stacked for Mobile first
+        flexDirection: 'column',
         padding: '20px',
         gap: '20px'
       }}>
@@ -147,12 +139,12 @@ function App() {
               fontSize: 16,
               minimap: { enabled: false },
               automaticLayout: true,
-              fontFamily: 'JetBrains Mono, monospace' // التأكد من استخدام خط المونو للكود
+              fontFamily: 'JetBrains Mono, monospace'
             }}
           />
         </div>
 
-        {/* Output and Controls Area */}
+        {/* Output Area */}
         <div style={{
           flex: 1,
           minHeight: '40vh',
@@ -177,11 +169,10 @@ function App() {
                 background: loading ? '#ccc' : 'linear-gradient(45deg, #007bff, #00ff99)',
                 color: loading ? '#666' : '#fff',
                 transition: 'all 0.3s ease',
-                boxShadow: loading ? 'none' : '0 4px 10px rgba(0,123,255,0.4)',
                 transform: executing ? 'scale(0.98)' : 'scale(1)',
               }}
             >
-              {loading ? 'جاري التحميل...' : executing ? 'جاري التنفيذ...' : 'تنفيذ الكود 🚀'}
+              {loading ? 'Loading...' : executing ? 'Running...' : 'Run Code 🚀'}
             </button>
 
             <button
@@ -199,7 +190,7 @@ function App() {
                 boxShadow: '0 4px 10px rgba(255, 77, 77, 0.4)'
               }}
             >
-              مسح الإخراج 🗑️
+              Clear Output 🗑️
             </button>
           </div>
           
@@ -210,10 +201,10 @@ function App() {
             borderBottom: '2px solid #eee',
             paddingBottom: '5px'
           }}>
-            شاشة الإخراج (Output)
+            Output Console
           </h3>
 
-          {/* Output Display Area - Using 'output-pre' class from index.css */}
+          {/* Output Display */}
           <pre className="output-pre">
             {output}
           </pre>
@@ -224,4 +215,3 @@ function App() {
 }
 
 export default App;
-
