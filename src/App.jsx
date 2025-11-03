@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-import SignupForm from './SignupForm';
 
 function App() {
   const [code, setCode] = useState(`# Write your Python code here\nprint("Hello!")`);
@@ -8,7 +7,6 @@ function App() {
   const [pyodide, setPyodide] = useState(null);
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
-  const [signedUp, setSignedUp] = useState(false); // حالة التسجيل
 
   useEffect(() => {
     const loadPyodide = async () => {
@@ -57,10 +55,6 @@ function App() {
   const clearOutput = () => {
     setOutput('');
   };
-
-  if (!signedUp) {
-    return <SignupForm onSignup={() => setSignedUp(true)} />;
-  }
 
   return (
     <div style={{
