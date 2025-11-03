@@ -133,6 +133,13 @@ function App() {
     setOutput('');
   };
 
+  // ✅ دالة Restart داخلي
+  const restartApp = () => {
+    setCode(initialCode);   // يرجع الكود الافتراضي
+    setOutput('');          // يمسح المخرجات
+    setExecuting(false);    // يوقف أي تنفيذ
+  };
+
   return (
     <div style={{
       height: '100vh',
@@ -232,6 +239,25 @@ function App() {
               }}
             >
               Clear Output 🗑️
+            </button>
+
+            {/* زر Restart */}
+            <button
+              onClick={restartApp}
+              style={{
+                flex: 1,
+                padding: '10px',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                background: '#6c757d',
+                color: '#fff',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 10px rgba(108, 117, 125, 0.4)'
+              }}
+            >
+              Restart 🔄
             </button>
 
             {/* زر اللصق */}
