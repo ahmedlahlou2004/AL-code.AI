@@ -231,4 +231,27 @@ function App() {
             </button>
 
             {/* زر اللصق */}
-            <PasteButton onPaste={(text) =>
+            <PasteButton onPaste={(text) => setCode(text)} />
+          </div>
+          
+          <h3 style={{
+            fontSize: '1.2rem',
+            color: '#333',
+            marginBottom: '10px',
+            borderBottom: '2px solid #eee',
+            paddingBottom: '5px'
+          }}>
+            Output Console
+          </h3>
+
+          {/* Output Display */}
+          <pre className="output-pre">
+            {output}
+          </pre>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
