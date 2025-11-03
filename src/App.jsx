@@ -40,3 +40,4 @@ const runCode = async () => {
     setExecuting(false);
   }
 };
+export default App;
