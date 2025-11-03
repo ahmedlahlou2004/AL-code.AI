@@ -54,6 +54,10 @@ function App() {
     }
   };
 
+  const clearOutput = () => {
+    setOutput('');
+  };
+
   if (!signedUp) {
     return <SignupForm onSignup={() => setSignedUp(true)} />;
   }
@@ -114,24 +118,43 @@ function App() {
           padding: '20px',
           boxShadow: '0 0 10px rgba(0,0,0,0.1)'
         }}>
-          <button
-            onClick={runCode}
-            disabled={loading || executing}
-            style={{
-              marginBottom: '10px',
-              padding: '10px',
-              border: 'none',
-              borderRadius: '8px',
-              fontWeight: '600',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              background: loading ? '#ccc' : 'linear-gradient(90deg, #00e5ff, #00ff99)',
-              color: loading ? '#666' : '#000',
-              transition: 'all 0.3s ease',
-              boxShadow: loading ? 'none' : '0 0 10px rgba(0,255,204,0.5)'
-            }}
-          >
-            {loading ? 'Loading...' : executing ? 'Running...' : 'Run Code ▶️'}
-          </button>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+            <button
+              onClick={runCode}
+              disabled={loading || executing}
+              style={{
+                flex: 1,
+                padding: '10px',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: '600',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                background: loading ? '#ccc' : 'linear-gradient(90deg, #00e5ff, #00ff99)',
+                color: loading ? '#666' : '#000',
+                transition: 'all 0.3s ease',
+                boxShadow: loading ? 'none' : '0 0 10px rgba(0,255,204,0.5)'
+              }}
+            >
+              {loading ? 'Loading...' : executing ? 'Running...' : 'Run Code ▶️'}
+            </button>
+
+            <button
+              onClick={clearOutput}
+              style={{
+                flex: 1,
+                padding: '10px',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                background: '#ff4d4d',
+                color: '#fff',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              Clear Output 🗑️
+            </button>
+          </div>
 
           <pre style={{
             whiteSpace: 'pre-wrap',
@@ -140,14 +163,4 @@ function App() {
             padding: '10px',
             borderRadius: '6px',
             border: '1px solid #ddd',
-            overflowY: 'auto'
-          }}>
-            {output}
-          </pre>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default App;
+            overflowY: 'auto
