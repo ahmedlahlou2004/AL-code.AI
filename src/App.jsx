@@ -3,7 +3,10 @@ import Editor from '@monaco-editor/react';
 import './index.css';
 
 function App() {
-  const initialCode = `print("Hello, AL-Code.AI!")`;
+  const initialCode = `import matplotlib.pyplot as plt
+plt.plot([1, 2, 3], [4, 5, 6])
+plt.title("رسم بياني تجريبي")
+plt.show()`;
 
   const [code, setCode] = useState(initialCode);
   const [output, setOutput] = useState('');
@@ -54,25 +57,49 @@ function App() {
       setOutput(prev => prev + "⏳ Pyodide is still loading...\n");
       return;
     }
+
     setExecuting(true);
     let outputLines = [], errorLines = [];
+
     pyodide.setStdout({ batched: (t) => outputLines.push(t.endsWith("\n") ? t : t + "\n") });
     pyodide.setStderr({ batched: (t) => errorLines.push(t.endsWith("\n") ? t : t + "\n") });
 
     try {
       const start = performance.now();
-      await pyodide.runPythonAsync(code);
+
+      const wrappedCode = `
+import matplotlib.pyplot as plt
+import io, base64, sys
+
+plt.switch_backend('agg')
+
+${code}
+
+buf = io.BytesIO()
+plt.savefig(buf, format='png')
+buf.seek(0)
+img_base64 = base64.b64encode(buf.read()).decode('utf-8')
+`;
+
+      await pyodide.runPythonAsync(wrappedCode);
       const end = performance.now();
       const time = (end - start).toFixed(2);
       const sep = "\n----------\n";
+
+      const img = pyodide.globals.get('img_base64');
+      const imageHTML = img
+        ? `<img src="data:image/png;base64,${img}" style="max-width:100%; border-radius:10px; margin-top:10px;" />`
+        : "";
 
       setOutput(prev =>
         prev +
         sep +
         (errorLines.length
           ? "❌ Execution Error:\n" + errorLines.join("") + `\n--- [ Error in ${time} ms ] ---\n\n`
-          : (outputLines.join("") || "✅ Executed successfully, but no output.") +
-            `\n⏱ Execution time: ${time} ms\n----------\n\n`)
+          : (outputLines.join("") || "✅ Executed successfully.") +
+            `\n⏱ Execution time: ${time} ms\n` +
+            imageHTML +
+            `\n----------\n\n`)
       );
     } catch (err) {
       setOutput(prev =>
@@ -131,9 +158,7 @@ function App() {
         </div>
         <div style={{ flex: 1, backgroundColor: theme === 'vs-dark' ? '#161b22' : '#fff', borderRadius: '10px', padding: '20px', overflowY: 'auto' }}>
           <h3 style={{ fontSize: '1.1rem', color: theme === 'vs-dark' ? '#00ff99' : '#007bff', marginBottom: '10px' }}>Output:</h3>
-          <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#f8f9fa', color: output.includes('❌') ? '#ff4d4d' : '#00ff88', borderRadius: '8px', padding: '15px', border: '1px solid #222', fontFamily: 'JetBrains Mono, monospace' }}>
-            {output}
-          </pre>
+          <div dangerouslySetInnerHTML={{ __html: output }} />
         </div>
       </div>
     </div>
