@@ -11,10 +11,11 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
   const [theme, setTheme] = useState('vs-dark');
-  const [showSettings, setShowSettings] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   const editorRef = useRef(null);
   const handleEditorMount = (editor) => (editorRef.current = editor);
+
   const undoCode = () => editorRef.current?.trigger('keyboard', 'undo', null);
   const redoCode = () => editorRef.current?.trigger('keyboard', 'redo', null);
 
@@ -53,7 +54,6 @@ function App() {
       setOutput(prev => prev + "⏳ Pyodide is still loading...\n");
       return;
     }
-
     setExecuting(true);
     let outputLines = [], errorLines = [];
     pyodide.setStdout({ batched: (t) => outputLines.push(t.endsWith("\n") ? t : t + "\n") });
@@ -86,106 +86,32 @@ function App() {
   };
 
   const clearOutput = () => setOutput('');
-  const restartApp = () => {
-    setCode(initialCode);
-    setOutput('');
-    setExecuting(false);
-  };
-
+  const restartApp = () => { setCode(initialCode); setOutput(''); setExecuting(false); };
   const pasteCode = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      setCode(text);
-    } catch (err) {
-      console.error("Clipboard access failed:", err);
-    }
+    try { const text = await navigator.clipboard.readText(); setCode(text); }
+    catch (err) { console.error("Clipboard access failed:", err); }
   };
 
   return (
-    <div style={{
-      height: '100vh',
-      backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#e8f5ff',
-      fontFamily: 'Arial, sans-serif',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
-      {/* 🔹 رأس الصفحة */}
-      <header style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '10px 20px',
-        background: theme === 'vs-dark'
-          ? 'linear-gradient(90deg, #007bff, #00ff99)'
-          : 'linear-gradient(90deg, #0066cc, #00cc88)',
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: '1.3rem',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
-      }}>
+    <div style={{ height: '100vh', fontFamily: 'Arial, sans-serif', display: 'flex', flexDirection: 'column', backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#e8f5ff' }}>
+      {/* Header */}
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', background: theme === 'vs-dark' ? 'linear-gradient(90deg, #007bff, #00ff99)' : 'linear-gradient(90deg, #0066cc, #00cc88)', color: '#fff', fontWeight: 'bold', fontSize: '1.3rem', boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
         <span>⚡ AL-Code.AI</span>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <button
-            onClick={runCode}
-            disabled={loading || executing}
-            style={{
-              padding: '8px 15px',
-              borderRadius: '6px',
-              border: 'none',
-              cursor: 'pointer',
-              background: loading ? '#777' : 'linear-gradient(45deg, #007bff, #00ff99)',
-              color: '#fff',
-              fontWeight: '600'
-            }}
-          >
-            {loading ? 'Loading...' : executing ? 'Running...' : 'Run 🚀'}
-          </button>
-          <button
-            onClick={clearOutput}
-            style={{
-              padding: '8px 15px',
-              borderRadius: '6px',
-              border: 'none',
-              cursor: 'pointer',
-              background: '#ff4d4d',
-              color: '#fff',
-              fontWeight: '600'
-            }}
-          >
-            🗑️
-          </button>
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            style={{
-              padding: '8px 15px',
-              borderRadius: '6px',
-              border: 'none',
-              cursor: 'pointer',
-              background: '#333',
-              color: '#fff',
-              fontWeight: '600'
-            }}
-          >
-            ⚙️
-          </button>
-        </div>
+        <button onClick={() => setShowMenu(!showMenu)} style={{ padding: '8px 15px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: '#333', color: '#fff', fontWeight: '600' }}>
+          ⚙️ Menu
+        </button>
       </header>
 
-      {/* ⚙️ قائمة الإعدادات المنبثقة */}
-      {showSettings && (
+      {/* Dropdown Menu */}
+      {showMenu && (
         <div style={{
-          position: 'absolute',
-          top: '60px',
-          right: '20px',
+          position: 'absolute', top: '50px', right: '20px',
           background: theme === 'vs-dark' ? '#1e1e1e' : '#fff',
-          borderRadius: '8px',
-          boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-          padding: '10px',
-          zIndex: 1000,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px'
+          borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+          padding: '10px', zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '8px'
         }}>
+          <button onClick={runCode}>🚀 Run</button>
+          <button onClick={clearOutput}>🗑️ Clear</button>
           <button onClick={restartApp}>🔄 Restart</button>
           <button onClick={undoCode}>↩️ Undo</button>
           <button onClick={redoCode}>↪️ Redo</button>
@@ -198,47 +124,14 @@ function App() {
         </div>
       )}
 
-      {/* 🔹 المحرر + الإخراج */}
+      {/* Editor + Output */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '20px' }}>
         <div style={{ flex: 1, borderRadius: '10px', overflow: 'hidden' }}>
-          <Editor
-            height="100%"
-            defaultLanguage="python"
-            value={code}
-            onChange={(v) => setCode(v || '')}
-            theme={theme}
-            onMount={handleEditorMount}
-            options={{
-              fontSize: 16,
-              minimap: { enabled: false },
-              automaticLayout: true,
-              fontFamily: 'JetBrains Mono, monospace'
-            }}
-          />
+          <Editor height="100%" defaultLanguage="python" value={code} onChange={(v) => setCode(v || '')} theme={theme} onMount={handleEditorMount} options={{ fontSize: 16, minimap: { enabled: false }, automaticLayout: true, fontFamily: 'JetBrains Mono, monospace' }} />
         </div>
-
-        <div style={{
-          flex: 1,
-          backgroundColor: theme === 'vs-dark' ? '#161b22' : '#fff',
-          borderRadius: '10px',
-          padding: '20px',
-          overflowY: 'auto'
-        }}>
-          <h3 style={{
-            fontSize: '1.1rem',
-            color: theme === 'vs-dark' ? '#00ff99' : '#007bff',
-            marginBottom: '10px'
-          }}>Output:</h3>
-          <pre style={{
-            whiteSpace: 'pre-wrap',
-            wordWrap: 'break-word',
-            backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#f8f9fa',
-            color: output.includes('❌') ? '#ff4d4d' : '#00ff88',
-            borderRadius: '8px',
-            padding: '15px',
-            border: '1px solid #222',
-            fontFamily: 'JetBrains Mono, monospace'
-          }}>
+        <div style={{ flex: 1, backgroundColor: theme === 'vs-dark' ? '#161b22' : '#fff', borderRadius: '10px', padding: '20px', overflowY: 'auto' }}>
+          <h3 style={{ fontSize: '1.1rem', color: theme === 'vs-dark' ? '#00ff99' : '#007bff', marginBottom: '10px' }}>Output:</h3>
+          <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#f8f9fa', color: output.includes('❌') ? '#ff4d4d' : '#00ff88', borderRadius: '8px', padding: '15px', border: '1px solid #222', fontFamily: 'JetBrains Mono, monospace' }}>
             {output}
           </pre>
         </div>
