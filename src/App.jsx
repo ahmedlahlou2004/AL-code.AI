@@ -11,6 +11,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [theme, setTheme] = useState('vs-dark'); // نحافظ على الثيم الأصلي
 
   const editorRef = useRef(null);
   const handleEditorMount = (editor) => (editorRef.current = editor);
@@ -78,9 +79,9 @@ function App() {
   const pasteCode = async () => { try { const text = await navigator.clipboard.readText(); setCode(text); } catch (err) { console.error(err); } };
 
   return (
-    <div style={{ height: '100vh', fontFamily: 'Arial, sans-serif', display: 'flex', flexDirection: 'column', background: '#0d1117', color: '#fff' }}>
+    <div style={{ height: '100vh', fontFamily: 'Arial, sans-serif', display: 'flex', flexDirection: 'column', backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#e8f5ff' }}>
       {/* رأس الصفحة */}
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', background: '#007bff', fontWeight: 'bold', fontSize: '1.3rem' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', background: theme === 'vs-dark' ? 'linear-gradient(90deg, #007bff, #00ff99)' : 'linear-gradient(90deg, #0066cc, #00cc88)', color: '#fff', fontWeight: 'bold', fontSize: '1.3rem' }}>
         ⚡ AL-Code.AI
         {/* زر الإعدادات الموحد */}
         <div style={{ position: 'relative' }}>
@@ -88,11 +89,7 @@ function App() {
             ⚙️
           </button>
           {showSettings && (
-            <div style={{
-              position: 'absolute', top: '40px', right: 0,
-              background: '#1e1e1e', borderRadius: '8px', padding: '10px',
-              display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 1000
-            }}>
+            <div style={{ position: 'absolute', top: '40px', right: 0, background: theme === 'vs-dark' ? '#1e1e1e' : '#fff', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 1000 }}>
               <button onClick={runCode}>🚀 Run</button>
               <button onClick={clearOutput}>🗑️ Clear Output</button>
               <button onClick={restartApp}>🔄 Restart</button>
@@ -109,12 +106,12 @@ function App() {
       {/* المحرر */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '20px' }}>
         <div style={{ flex: 1, borderRadius: '10px', overflow: 'hidden' }}>
-          <Editor height="100%" defaultLanguage="python" value={code} onChange={(v) => setCode(v || '')} theme="vs-dark" onMount={handleEditorMount} options={{ fontSize: 16, minimap: { enabled: false }, automaticLayout: true, fontFamily: 'JetBrains Mono, monospace' }} />
+          <Editor height="100%" defaultLanguage="python" value={code} onChange={(v) => setCode(v || '')} theme={theme} onMount={handleEditorMount} options={{ fontSize: 16, minimap: { enabled: false }, automaticLayout: true, fontFamily: 'JetBrains Mono, monospace' }} />
         </div>
 
-        <div style={{ flex: 1, background: '#161b22', borderRadius: '10px', padding: '20px', overflowY: 'auto' }}>
-          <h3 style={{ fontSize: '1.1rem', color: '#00ff99', marginBottom: '10px' }}>Output:</h3>
-          <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', background: '#0d1117', color: output.includes('❌') ? '#ff4d4d' : '#00ff88', borderRadius: '8px', padding: '15px', fontFamily: 'JetBrains Mono, monospace' }}>
+        <div style={{ flex: 1, background: theme === 'vs-dark' ? '#161b22' : '#fff', borderRadius: '10px', padding: '20px', overflowY: 'auto' }}>
+          <h3 style={{ fontSize: '1.1rem', color: theme === 'vs-dark' ? '#00ff99' : '#007bff', marginBottom: '10px' }}>Output:</h3>
+          <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#f8f9fa', color: output.includes('❌') ? '#ff4d4d' : '#00ff88', borderRadius: '8px', padding: '15px', fontFamily: 'JetBrains Mono, monospace' }}>
             {output}
           </pre>
         </div>
