@@ -1,21 +1,51 @@
-// Import the functions you need from the SDKs you need
+// src/firebase.js
+
+// ✅ استيراد خدمات Firebase التي تحتاجها
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getFirestore, collection, addDoc } from "firebase/firestore";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// ✅ إعدادات مشروعك من Firebase Console
 const firebaseConfig = {
-  apiKey: "AIzaSyBU0LFsZfI1EecKUyHmPTM8v_OCDfhAOLk",
-  authDomain: "al-code-ai.firebaseapp.com",
-  projectId: "al-code-ai",
-  storageBucket: "al-code-ai.firebasestorage.app",
-  messagingSenderId: "928389303589",
-  appId: "1:928389303589:web:492a9b60f8f2f784815ecc",
-  measurementId: "G-C1Z6VXPVGF"
+  apiKey: "AIzaSyC4L-FirebaseKey_mCObAUk",
+  authDomain: "ai-code-ai.firebaseapp.com",
+  projectId: "ai-code-ai",
+  storageBucket: "ai-code-ai.appspot.com",
+  messagingSenderId: "FirebaseSenderID",
+  appId: "1:FirebaseAppID:web:FirebaseWebID",
+  measurementId: "G-FirebaseMeasurementID"
 };
 
-// Initialize Firebase
+// ✅ تهيئة Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+export const analytics = getAnalytics(app);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+
+// ✅ دالة تسجيل الدخول باستخدام Google
+export async function loginWithGoogle() {
+  const provider = new GoogleAuthProvider();
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    console.log("✅ Logged in as:", user.displayName);
+    return user;
+  } catch (error) {
+    console.error("❌ Login error:", error);
+    return null;
+  }
+}
+
+// ✅ دالة لحفظ الكود في Firestore
+export async function saveCode(code) {
+  try {
+    await addDoc(collection(db, "codes"), {
+      content: code,
+      timestamp: Date.now()
+    });
+    console.log("✅ Code saved to Firestore");
+  } catch (error) {
+    console.error("❌ Error saving code:", error);
+  }
+}
