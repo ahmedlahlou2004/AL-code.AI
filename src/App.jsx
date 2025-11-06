@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import './index.css';
-import { loginWithGoogle, saveCode } from './firebase'; // ✅ استيراد Firebase
+import { loginWithGoogle, saveCode } from './firebase';
 
 function App() {
   const initialCode = `import matplotlib.pyplot as plt
@@ -120,9 +120,18 @@ img_base64 = base64.b64encode(buf.read()).decode('utf-8')
     catch (err) { console.error("Clipboard access failed:", err); }
   };
 
+  const handleLogin = async () => {
+    console.log("🔍 Login button clicked");
+    try {
+      await loginWithGoogle();
+      console.log("✅ Redirect initiated");
+    } catch (err) {
+      console.error("❌ Login handler error:", err);
+    }
+  };
+
   return (
     <div style={{ height: '100vh', fontFamily: 'Arial, sans-serif', display: 'flex', flexDirection: 'column', backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#e8f5ff' }}>
-      {/* Header */}
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', background: theme === 'vs-dark' ? 'linear-gradient(90deg, #007bff, #00ff99)' : 'linear-gradient(90deg, #0066cc, #00cc88)', color: '#fff', fontWeight: 'bold', fontSize: '1.3rem', boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
         <span>⚡ AL-Code.AI</span>
         <button onClick={() => setShowMenu(!showMenu)} style={{ padding: '8px 15px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: '#333', color: '#fff', fontWeight: '600' }}>
@@ -130,7 +139,6 @@ img_base64 = base64.b64encode(buf.read()).decode('utf-8')
         </button>
       </header>
 
-      {/* Dropdown Menu */}
       {showMenu && (
         <div style={{
           position: 'absolute', top: '50px', right: '20px',
@@ -149,12 +157,11 @@ img_base64 = base64.b64encode(buf.read()).decode('utf-8')
           <button onClick={() => setTheme(theme === 'vs-dark' ? 'light' : 'vs-dark')}>
             {theme === 'vs-dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
           </button>
-          <button onClick={loginWithGoogle}>🔐 Login</button>
+          <button onClick={handleLogin}>🔐 Login</button>
           <button onClick={() => saveCode(code)}>💾 Save Code</button>
         </div>
       )}
 
-      {/* Editor + Output */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '20px' }}>
         <div style={{ flex: 1, borderRadius: '10px', overflow: 'hidden' }}>
           <Editor height="100%" defaultLanguage="python" value={code} onChange={(v) => setCode(v || '')} theme={theme} onMount={handleEditorMount} options={{ fontSize: 16, minimap: { enabled: false }, automaticLayout: true, fontFamily: 'JetBrains Mono, monospace' }} />
@@ -164,8 +171,4 @@ img_base64 = base64.b64encode(buf.read()).decode('utf-8')
           <div dangerouslySetInnerHTML={{ __html: output }} />
         </div>
       </div>
-    </div>
-  );
-}
-
-export default App;
+    </div
