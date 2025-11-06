@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 // src/firebase.js
 
 // ✅ استيراد خدمات Firebase التي تحتاجها
