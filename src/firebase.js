@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // src/firebase.js
 
 // ✅ استيراد خدمات Firebase التي تحتاجها
@@ -49,3 +50,19 @@ export async function saveCode(code) {
     console.error("❌ Error saving code:", error);
   }
 }
+=======
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+
+const firebaseConfig = {
+  apiKey: "🔑 مفتاح API من Firebase",
+  authDomain: "xxx.firebaseapp.com",
+  projectId: "xxx",
+  storageBucket: "xxx.appspot.com",
+  messagingSenderId: "xxx",
+  appId: "xxx"
+};
+
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+>>>>>>> 7dafdde (fix: added firebase dependency and updated app)
