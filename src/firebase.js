@@ -50,7 +50,7 @@ export async function saveCode(code) {
     console.error("❌ Error saving code:", error);
   }
 }
-=======
+
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
