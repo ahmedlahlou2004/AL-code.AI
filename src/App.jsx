@@ -49,6 +49,7 @@ plt.show()`;
     const saved = localStorage.getItem('user_code');
     if (saved) setCode(saved);
   }, []);
+
   useEffect(() => {
     localStorage.setItem('user_code', code);
   }, [code]);
@@ -168,7 +169,4 @@ img_base64 = base64.b64encode(buf.read()).decode('utf-8')
         </div>
         <div style={{ flex: 1, backgroundColor: theme === 'vs-dark' ? '#161b22' : '#fff', borderRadius: '10px', padding: '20px', overflowY: 'auto' }}>
           <h3 style={{ fontSize: '1.1rem', color: theme === 'vs-dark' ? '#00ff99' : '#007bff', marginBottom: '10px' }}>Output:</h3>
-          <div dangerouslySetInnerHTML={{ __html: output }} />
-        </div>
-      </div>
-    </div
+          <div dangerouslySetInnerHTML={{ __
