@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import './index.css';
+import { loginWithGoogle, saveCode } from './firebase'; // ✅ استيراد Firebase
 
 function App() {
   const initialCode = `import matplotlib.pyplot as plt
@@ -148,6 +149,8 @@ img_base64 = base64.b64encode(buf.read()).decode('utf-8')
           <button onClick={() => setTheme(theme === 'vs-dark' ? 'light' : 'vs-dark')}>
             {theme === 'vs-dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
           </button>
+          <button onClick={loginWithGoogle}>🔐 Login</button>
+          <button onClick={() => saveCode(code)}>💾 Save Code</button>
         </div>
       )}
 
