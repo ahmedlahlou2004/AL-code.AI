@@ -1,12 +1,10 @@
 // src/firebase.js
 
-// ✅ استيراد خدمات Firebase التي تحتاجها
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
 import { getFirestore, collection, addDoc } from "firebase/firestore";
 
-// ✅ إعدادات مشروعك من Firebase Console
 const firebaseConfig = {
   apiKey: "AIzaSyC4L-FirebaseKey_mCObAUk",
   authDomain: "ai-code-ai.firebaseapp.com",
@@ -17,27 +15,22 @@ const firebaseConfig = {
   measurementId: "G-FirebaseMeasurementID"
 };
 
-// ✅ تهيئة Firebase
 const app = initializeApp(firebaseConfig);
 export const analytics = getAnalytics(app);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// ✅ دالة تسجيل الدخول باستخدام Google
+// ✅ تسجيل الدخول باستخدام Google (Redirect)
 export async function loginWithGoogle() {
   const provider = new GoogleAuthProvider();
   try {
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    console.log("✅ Logged in as:", user.displayName);
-    return user;
+    await signInWithRedirect(auth, provider);
   } catch (error) {
-    console.error("❌ Login error:", error);
-    return null;
+    console.error("❌ Login error:", error.code, error.message);
   }
 }
 
-// ✅ دالة لحفظ الكود في Firestore
+// ✅ حفظ الكود في Firestore
 export async function saveCode(code) {
   try {
     await addDoc(collection(db, "codes"), {
