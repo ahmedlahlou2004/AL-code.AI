@@ -1,44 +1,45 @@
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyC4L-FirebaseKey_mCObAUk",
-  authDomain: "ai-code-ai.firebaseapp.com",
-  projectId: "ai-code-ai",
-  storageBucket: "ai-code-ai.appspot.com",
-  messagingSenderId: "FirebaseSenderID",
-  appId: "1:FirebaseAppID:web:FirebaseWebID",
-  measurementId: "G-FirebaseMeasurementID"
-};
-
-const app = initializeApp(firebaseConfig);
-export const analytics = getAnalytics(app);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-
-export async function loginWithGoogle() {
-  const provider = new GoogleAuthProvider();
-  try {
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    console.log("✅ Logged in as:", user.displayName);
-    return user;
-  } catch (error) {
-    console.error("❌ Login error:", error);
-    return null;
-  }
-}
-
-export async function saveCode(code) {
-  try {
-    await addDoc(collection(db, "codes"), {
-      content: code,
-      timestamp: Date.now()
-    });
-    console.log("✅ Code saved to Firestore");
-  } catch (error) {
-    console.error("❌ Error saving code:", error);
-  }
+{
+  "name": "python-web-editor",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A creative and interactive online Python editor built with React and Vite",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+  },
+  "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
+    "axios": "^1.5.0",
+    "pyodide": "^0.23.0",
+    "firebase": "^12.5.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.4",
+    "eslint": "^9.36.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.22",
+    "globals": "^16.4.0",
+    "vite": "^7.1.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "python",
+    "editor",
+    "online",
+    "react",
+    "vite",
+    "interactive",
+    "code"
+  ],
+  "license": "MIT"
 }
