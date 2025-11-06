@@ -65,4 +65,4 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
->>>>>>> 7dafdde (fix: added firebase dependency and updated app)
+
