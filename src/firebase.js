@@ -2,9 +2,18 @@
 
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getAuth, GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup // ✅ استخدمنا pop-up بدل redirect
+} from "firebase/auth";
+import {
+  getFirestore,
+  collection,
+  addDoc
+} from "firebase/firestore";
 
+// ✅ إعداد Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyC4L-FirebaseKey_mCObAUk",
   authDomain: "ai-code-ai.firebaseapp.com",
@@ -20,11 +29,12 @@ export const analytics = getAnalytics(app);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// ✅ تسجيل الدخول باستخدام Google (Redirect)
+// ✅ تسجيل الدخول باستخدام Google (Popup)
 export async function loginWithGoogle() {
   const provider = new GoogleAuthProvider();
   try {
-    await signInWithRedirect(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    console.log("✅ Logged in:", result.user);
   } catch (error) {
     console.error("❌ Login error:", error.code, error.message);
   }
