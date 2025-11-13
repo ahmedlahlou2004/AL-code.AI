@@ -2,21 +2,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import './index.css';
 
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
 function App() {
   const initialCode = `import math
 
 # Example: ln(x)
 x = 10
 ln_x = math.log(x)   # natural logarithm
-print(f"ln({x}) = {ln_x}")
-`;
+print(f"ln({x}) = {ln_x}")`;
 
-  // 🔐 Password protection
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
-  const correctPassword = "med2025"; // ⚠️ ضعها في متغير بيئي عند النشر
+  const [password, setPassword] = useState('');
+  const correctPassword = 'med2025';
 
-  // ⚙️ App states
   const [code, setCode] = useState(initialCode);
   const [output, setOutput] = useState('');
   const [pyodide, setPyodide] = useState(null);
@@ -25,13 +25,16 @@ print(f"ln({x}) = {ln_x}")
   const [theme, setTheme] = useState('vs-dark');
   const [showMenu, setShowMenu] = useState(false);
 
+  const [showGemini, setShowGemini] = useState(false);
+  const [geminiInput, setGeminiInput] = useState('');
+  const [geminiResult, setGeminiResult] = useState('');
+  const [geminiLoading, setGeminiLoading] = useState(false);
+
   const editorRef = useRef(null);
   const handleEditorMount = (editor) => (editorRef.current = editor);
-
   const undoCode = () => editorRef.current?.trigger('keyboard', 'undo', null);
   const redoCode = () => editorRef.current?.trigger('keyboard', 'redo', null);
 
-  // ✅ تحميل Pyodide
   useEffect(() => {
     const loadPyodide = async () => {
       try {
@@ -41,26 +44,24 @@ print(f"ln({x}) = {ln_x}")
           return;
         }
         const pyodideInstance = await window.loadPyodide({
-          indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
+          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/',
         });
-        await pyodideInstance.loadPackage(["numpy", "matplotlib", "pandas"]);
+        await pyodideInstance.loadPackage(['numpy', 'matplotlib', 'pandas']);
         window._pyodideInstance = pyodideInstance;
         setPyodide(pyodideInstance);
         setLoading(false);
       } catch (err) {
-        setOutput("⚠️ Failed to load Pyodide:\n" + err.message + "\n");
+        setOutput('⚠️ Failed to load Pyodide:\n' + err.message + '\n');
       }
     };
     loadPyodide();
   }, []);
 
-  // 💾 تحميل الكود من التخزين المحلي
   useEffect(() => {
     const saved = localStorage.getItem('user_code');
     if (saved) setCode(saved);
   }, []);
 
-  // 💾 حفظ الكود تلقائيًا بعد 0.5 ثانية من آخر تعديل
   useEffect(() => {
     const timeout = setTimeout(() => {
       localStorage.setItem('user_code', code);
@@ -68,18 +69,18 @@ print(f"ln({x}) = {ln_x}")
     return () => clearTimeout(timeout);
   }, [code]);
 
-  // 🚀 تشغيل الكود
   const runCode = async () => {
     if (!pyodide) {
-      setOutput(prev => prev + "⏳ Pyodide is still loading...\n");
+      setOutput((prev) => prev + '⏳ Pyodide is still loading...\n');
       return;
     }
 
     setExecuting(true);
-    let outputLines = [], errorLines = [];
+    let outputLines = [],
+      errorLines = [];
 
-    pyodide.setStdout({ batched: (t) => outputLines.push(t.endsWith("\n") ? t : t + "\n") });
-    pyodide.setStderr({ batched: (t) => errorLines.push(t.endsWith("\n") ? t : t + "\n") });
+    pyodide.setStdout({ batched: (t) => outputLines.push(t.endsWith('\n') ? t : t + '\n') });
+    pyodide.setStderr({ batched: (t) => errorLines.push(t.endsWith('\n') ? t : t + '\n') });
 
     try {
       const start = performance.now();
@@ -92,7 +93,6 @@ plt.switch_backend('agg')
 
 ${code}
 
-# ✅ Save image only if a figure exists
 img_base64 = None
 if plt.get_fignums():
     buf = io.BytesIO()
@@ -104,26 +104,30 @@ if plt.get_fignums():
       await pyodide.runPythonAsync(wrappedCode);
       const end = performance.now();
       const time = (end - start).toFixed(2);
-      const sep = "\n----------\n";
+      const sep = '\n----------\n';
 
       const img = pyodide.globals.get('img_base64');
       const imageHTML = img
         ? `<img src="data:image/png;base64,${img}" style="max-width:100%; border-radius:10px; margin-top:10px;" />`
-        : "";
+        : '';
 
-      setOutput(prev =>
+      setOutput((prev) =>
         prev +
         sep +
         (errorLines.length
-          ? "❌ Execution Error:\n" + errorLines.join("") + `\n--- [ Error in ${time} ms ] ---\n\n`
-          : (outputLines.join("") || "✅ Executed successfully.") +
+          ? '❌ Execution Error:\n' + errorLines.join('') + `\n--- [ Error in ${time} ms ] ---\n\n`
+          : (outputLines.join('') || '✅ Executed successfully.') +
             `\n⏱ Execution time: ${time} ms\n` +
             imageHTML +
             `\n----------\n\n`)
       );
     } catch (err) {
-      setOutput(prev =>
-        prev + "\n----------\n❌ Unexpected Error:\n" + err.message + "\n--- [ Execution End with Error ] ---\n\n"
+      setOutput(
+        (prev) =>
+          prev +
+          '\n----------\n❌ Unexpected Error:\n' +
+          err.message +
+          '\n--- [ Execution End with Error ] ---\n\n'
       );
     } finally {
       setExecuting(false);
@@ -133,75 +137,75 @@ if plt.get_fignums():
   };
 
   const clearOutput = () => setOutput('');
-  const restartApp = () => { setCode(initialCode); setOutput(''); setExecuting(false); };
+  const restartApp = () => {
+    setCode(initialCode);
+    setOutput('');
+    setExecuting(false);
+  };
   const pasteCode = async () => {
-    try { const text = await navigator.clipboard.readText(); setCode(text); }
-    catch (err) { console.error("Clipboard access failed:", err); }
+    try {
+      const text = await navigator.clipboard.readText();
+      setCode(text);
+    } catch (err) {
+      console.error('Clipboard access failed:', err);
+    }
   };
 
-  // 🌀 شاشة التحميل (loading screen)
+  const handleGeminiRequest = async (mode) => {
+    setGeminiLoading(true);
+    setGeminiResult('');
+
+    let prompt = '';
+    if (mode === 'write') {
+      prompt = 'اكتب كودًا ينفذ هذا الوصف:\n\n' + geminiInput;
+    } else if (mode === 'fix') {
+      prompt = 'صحح هذا الكود وأزل الأخطاء:\n\n' + geminiInput;
+    } else if (mode === 'explain') {
+      prompt = 'اشرح هذا الكود بشكل واضح:\n\n' + geminiInput;
+    }
+
+    try {
+      const res = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+        }),
+      });
+
+      const data = await res.json();
+      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || '❌ لا يوجد رد من Gemini';
+      setGeminiResult(reply);
+    } catch (err) {
+      setGeminiResult('❌ حدث خطأ أثناء الاتصال بـ Gemini:\n' + err.message);
+    } finally {
+      setGeminiLoading(false);
+    }
+  };
+
   if (loading) {
     return (
-      <div style={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "linear-gradient(135deg, #0d1117, #1b2838)",
-        color: "#00ffcc",
-        fontFamily: "JetBrains Mono, monospace"
-      }}>
-        <div style={{
-          width: "70px",
-          height: "70px",
-          border: "6px solid rgba(255,255,255,0.2)",
-          borderTopColor: "#00ffcc",
-          borderRadius: "50%",
-          animation: "spin 1s linear infinite",
-        }} />
-        <h2 style={{ marginTop: "20px", fontWeight: "500", letterSpacing: "1px" }}>
-          🚀 Loading Pyodide environment...
-        </h2>
-        <style>
-          {`@keyframes spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }`}
-        </style>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: 'linear-gradient(135deg, #0d1117, #1b2838)', color: '#00ffcc', fontFamily: 'JetBrains Mono, monospace' }}>
+        <div style={{ width: '70px', height: '70px', border: '6px solid rgba(255,255,255,0.2)', borderTopColor: '#00ffcc', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <h2 style={{ marginTop: '20px', fontWeight: '500', letterSpacing: '1px' }}>🚀 Loading Pyodide environment...</h2>
+        <style>{`@keyframes spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }`}</style>
       </div>
     );
   }
 
-  // 🔐 شاشة تسجيل الدخول
   if (!isAuthenticated) {
     return (
-      <div style={{
-        height: "100vh", display: "flex", justifyContent: "center",
-        alignItems: "center", flexDirection: "column", background: "#0d1117", color: "#fff"
-      }}>
+      <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', background: '#0d1117', color: '#fff' }}>
         <h2>🔐 Enter password to access</h2>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ padding: "10px", borderRadius: "5px", marginTop: "10px" }}
-        />
-        <button
-          onClick={() => {
-            if (password === correctPassword) {
-              setIsAuthenticated(true);
-            } else {
-              alert("❌ Wrong password");
-            }
-          }}
-          style={{ marginTop: "10px", padding: "8px 15px" }}
-        >
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ padding: '10px', borderRadius: '5px', marginTop: '10px' }} />
+        <button onClick={() => (password === correctPassword ? setIsAuthenticated(true) : alert('❌ Wrong password'))} style={{ marginTop: '10px', padding: '8px 15px' }}>
           Login
         </button>
       </div>
     );
   }
 
-  // ✅ واجهة التطبيق بعد الدخول
-  return (
+    return (
     <div style={{ height: '100vh', fontFamily: 'Arial, sans-serif', display: 'flex', flexDirection: 'column', backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#e8f5ff' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', background: theme === 'vs-dark' ? 'linear-gradient(90deg, #007bff, #00ff99)' : 'linear-gradient(90deg, #0066cc, #00cc88)', color: '#fff', fontWeight: 'bold', fontSize: '1.3rem', boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
         <span>⚡ AL-Code.AI</span>
@@ -228,6 +232,7 @@ if plt.get_fignums():
           <button onClick={() => setTheme(theme === 'vs-dark' ? 'light' : 'vs-dark')}>
             {theme === 'vs-dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
           </button>
+          <button onClick={() => setShowGemini(true)}>🤖 Gemini Assistant</button>
         </div>
       )}
 
@@ -266,6 +271,35 @@ if plt.get_fignums():
           <div dangerouslySetInnerHTML={{ __html: output }}></div>
         </div>
       </div>
+
+      {showGemini && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center',
+          alignItems: 'center', zIndex: 9999
+        }}>
+          <div style={{
+            background: '#fff', padding: '20px', borderRadius: '10px',
+            width: '600px', maxHeight: '80vh', overflowY: 'auto'
+          }}>
+            <h2 style={{ marginBottom: '10px' }}>🤖 Gemini Assistant</h2>
+            <textarea
+              rows={6}
+              style={{ width: '100%', marginBottom: '10px' }}
+              placeholder="اكتب وصفًا أو كودًا هنا..."
+              value={geminiInput}
+              onChange={(e) => setGeminiInput(e.target.value)}
+            />
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+              <button onClick={() => handleGeminiRequest('write')}>✍️ كتابة الكود</button>
+              <button onClick={() => handleGeminiRequest('fix')}>🛠️ تصحيح الكود</button>
+              <button onClick={() => handleGeminiRequest('explain')}>🔍 شرح الكود</button>
+            </div>
+            {geminiLoading ? <p>⏳ جارٍ المعالجة...</p> : <pre>{geminiResult}</pre>}
+            <button onClick={() => setShowGemini(false)} style={{ marginTop: '10px' }}>❌ إغلاق</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
