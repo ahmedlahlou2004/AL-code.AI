@@ -3,10 +3,7 @@ import Editor from '@monaco-editor/react';
 import './index.css';
 
 function App() {
-  const initialCode = `import matplotlib.pyplot as plt
-plt.plot([1, 2, 3], [4, 5, 6])
-plt.title("رسم بياني تجريبي")
-plt.show()`;
+  const initialCode = ``;
 
   // 🔐 Password protection states
   const [isAuthenticated, setIsAuthenticated] = useState(false);
