@@ -22,6 +22,8 @@ print(f"ln({x}) = {ln_x}")
   const [pyodide, setPyodide] = useState(null);
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
+  const [theme, setTheme] = useState('vs-dark');
+  const [showMenu, setShowMenu] = useState(false);
 
   const editorRef = useRef(null);
   const handleEditorMount = (editor) => (editorRef.current = editor);
@@ -130,6 +132,10 @@ if plt.get_fignums():
 
   const clearOutput = () => setOutput('');
   const restartApp = () => { setCode(initialCode); setOutput(''); setExecuting(false); };
+  const pasteCode = async () => {
+    try { const text = await navigator.clipboard.readText(); setCode(text); }
+    catch (err) { console.error("Clipboard access failed:", err); }
+  };
 
   // Loading screen
   if (loading) {
@@ -140,7 +146,7 @@ if plt.get_fignums():
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        background: "#0d1117",
+        background: "linear-gradient(135deg, #0d1117, #1b2838)",
         color: "#00ffcc",
         fontFamily: "JetBrains Mono, monospace"
       }}>
@@ -153,7 +159,7 @@ if plt.get_fignums():
           animation: "spin 1s linear infinite",
         }} />
         <h2 style={{ marginTop: "20px", fontWeight: "500", letterSpacing: "1px" }}>
-          🚀 Loading Pyodide...
+          🚀 Loading Pyodide environment...
         </h2>
         <style>
           {`@keyframes spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }`}
@@ -169,20 +175,19 @@ if plt.get_fignums():
         height: "100vh", display: "flex", justifyContent: "center",
         alignItems: "center", flexDirection: "column", background: "#0d1117", color: "#fff"
       }}>
-        <h2>🔐 Enter Password to Access</h2>
+        <h2>🔐 Enter password to access</h2>
         <input
           type="password"
-          placeholder="Enter your password..."
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={{ padding: "10px", borderRadius: "5px", marginTop: "10px", width: "200px" }}
+          style={{ padding: "10px", borderRadius: "5px", marginTop: "10px" }}
         />
         <button
           onClick={() => {
             if (password === correctPassword) setIsAuthenticated(true);
             else alert("❌ Wrong password");
           }}
-          style={{ marginTop: "10px", padding: "8px 15px", cursor: "pointer" }}
+          style={{ marginTop: "10px", padding: "8px 15px" }}
         >
           Login
         </button>
@@ -192,10 +197,31 @@ if plt.get_fignums():
 
   // Main App UI
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117', color: '#fff', fontFamily: 'JetBrains Mono, monospace' }}>
-      <header style={{ padding: '10px 20px', fontSize: '1.3rem', fontWeight: 'bold', background: '#161b22', boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
-        ⚡ AL-Code.AI
+    <div style={{ height: '100vh', fontFamily: 'Arial, sans-serif', display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', background: '#161b22', color: '#fff', fontWeight: 'bold', fontSize: '1.3rem', boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
+        <span>⚡ AL-Code.AI</span>
+        <button onClick={() => setShowMenu(!showMenu)} style={{ padding: '8px 15px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: '#333', color: '#fff', fontWeight: '600' }}>
+          ⚙️ Menu
+        </button>
       </header>
+
+      {showMenu && (
+        <div style={{
+          position: 'absolute', top: '50px', right: '20px',
+          background: '#1e1e1e',
+          borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+          padding: '10px', zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '8px'
+        }}>
+          <button onClick={runCode}>🚀 Run</button>
+          <button onClick={clearOutput}>🗑️ Clear</button>
+          <button onClick={restartApp}>🔄 Restart</button>
+          <button onClick={undoCode}>↩️ Undo</button>
+          <button onClick={redoCode}>↪️ Redo</button>
+          <button onClick={() => navigator.clipboard.writeText(code)}>📑 Copy Code</button>
+          <button onClick={() => navigator.clipboard.writeText(output)}>📋 Copy Output</button>
+          <button onClick={pasteCode}>📥 Paste</button>
+        </div>
+      )}
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '20px' }}>
         <div style={{ flex: 1, borderRadius: '10px', overflow: 'hidden' }}>
@@ -210,23 +236,20 @@ if plt.get_fignums():
               fontSize: 16,
               minimap: { enabled: false },
               automaticLayout: true,
-              fontFamily: 'JetBrains Mono, monospace',
-              placeholder: 'Write your Python code here...'
+              fontFamily: 'JetBrains Mono, monospace'
             }}
           />
         </div>
 
-        <div style={{ flex: 1, backgroundColor: '#161b22', borderRadius: '10px', padding: '20px', overflowY: 'auto' }}>
+        <div style={{
+          flex: 1,
+          backgroundColor: '#161b22',
+          borderRadius: '10px',
+          padding: '20px',
+          overflowY: 'auto'
+        }}>
           <h3 style={{ fontSize: '1.1rem', color: '#00ff99', marginBottom: '10px' }}>Output:</h3>
           <div dangerouslySetInnerHTML={{ __html: output }}></div>
-        </div>
-
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={runCode}>🚀 Run</button>
-          <button onClick={clearOutput}>🗑️ Clear</button>
-          <button onClick={restartApp}>🔄 Restart</button>
-          <button onClick={undoCode}>↩️ Undo</button>
-          <button onClick={redoCode}>↪️ Redo</button>
         </div>
       </div>
     </div>
@@ -234,3 +257,4 @@ if plt.get_fignums():
 }
 
 export default App;
+
