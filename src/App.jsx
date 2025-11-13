@@ -11,19 +11,17 @@ ln_x = math.log(x)   # natural logarithm
 print(f"ln({x}) = {ln_x}")
 `;
 
-  // 🔐 Password protection
+  // Password protection
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const correctPassword = "med2025"; // ⚠️ ضعها في متغير بيئي عند النشر
 
-  // ⚙️ App states
+  // App states
   const [code, setCode] = useState(initialCode);
   const [output, setOutput] = useState('');
   const [pyodide, setPyodide] = useState(null);
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
-  const [theme, setTheme] = useState('vs-dark');
-  const [showMenu, setShowMenu] = useState(false);
 
   const editorRef = useRef(null);
   const handleEditorMount = (editor) => (editorRef.current = editor);
@@ -31,7 +29,7 @@ print(f"ln({x}) = {ln_x}")
   const undoCode = () => editorRef.current?.trigger('keyboard', 'undo', null);
   const redoCode = () => editorRef.current?.trigger('keyboard', 'redo', null);
 
-  // ✅ تحميل Pyodide
+  // Load Pyodide
   useEffect(() => {
     const loadPyodide = async () => {
       try {
@@ -54,13 +52,13 @@ print(f"ln({x}) = {ln_x}")
     loadPyodide();
   }, []);
 
-  // 💾 تحميل الكود من التخزين المحلي
+  // Load code from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('user_code');
     if (saved) setCode(saved);
   }, []);
 
-  // 💾 حفظ الكود تلقائيًا بعد 0.5 ثانية من آخر تعديل
+  // Auto-save code
   useEffect(() => {
     const timeout = setTimeout(() => {
       localStorage.setItem('user_code', code);
@@ -68,7 +66,7 @@ print(f"ln({x}) = {ln_x}")
     return () => clearTimeout(timeout);
   }, [code]);
 
-  // 🚀 تشغيل الكود
+  // Run Python code
   const runCode = async () => {
     if (!pyodide) {
       setOutput(prev => prev + "⏳ Pyodide is still loading...\n");
@@ -92,7 +90,6 @@ plt.switch_backend('agg')
 
 ${code}
 
-# ✅ Save image only if a figure exists
 img_base64 = None
 if plt.get_fignums():
     buf = io.BytesIO()
@@ -104,7 +101,6 @@ if plt.get_fignums():
       await pyodide.runPythonAsync(wrappedCode);
       const end = performance.now();
       const time = (end - start).toFixed(2);
-      const sep = "\n----------\n";
 
       const img = pyodide.globals.get('img_base64');
       const imageHTML = img
@@ -113,17 +109,17 @@ if plt.get_fignums():
 
       setOutput(prev =>
         prev +
-        sep +
+        "\n----------\n" +
         (errorLines.length
-          ? "❌ Execution Error:\n" + errorLines.join("") + `\n--- [ Error in ${time} ms ] ---\n\n`
+          ? "❌ Execution Error:\n" + errorLines.join("") + `\n--- [ Error in ${time} ms ] ---\n`
           : (outputLines.join("") || "✅ Executed successfully.") +
             `\n⏱ Execution time: ${time} ms\n` +
-            imageHTML +
-            `\n----------\n\n`)
+            imageHTML) +
+        "\n----------\n"
       );
     } catch (err) {
       setOutput(prev =>
-        prev + "\n----------\n❌ Unexpected Error:\n" + err.message + "\n--- [ Execution End with Error ] ---\n\n"
+        prev + "\n----------\n❌ Unexpected Error:\n" + err.message + "\n----------\n"
       );
     } finally {
       setExecuting(false);
@@ -134,12 +130,8 @@ if plt.get_fignums():
 
   const clearOutput = () => setOutput('');
   const restartApp = () => { setCode(initialCode); setOutput(''); setExecuting(false); };
-  const pasteCode = async () => {
-    try { const text = await navigator.clipboard.readText(); setCode(text); }
-    catch (err) { console.error("Clipboard access failed:", err); }
-  };
 
-  // 🌀 شاشة التحميل (loading screen)
+  // Loading screen
   if (loading) {
     return (
       <div style={{
@@ -148,7 +140,7 @@ if plt.get_fignums():
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        background: "linear-gradient(135deg, #0d1117, #1b2838)",
+        background: "#0d1117",
         color: "#00ffcc",
         fontFamily: "JetBrains Mono, monospace"
       }}>
@@ -161,7 +153,7 @@ if plt.get_fignums():
           animation: "spin 1s linear infinite",
         }} />
         <h2 style={{ marginTop: "20px", fontWeight: "500", letterSpacing: "1px" }}>
-          🚀 Loading Pyodide environment...
+          🚀 Loading Pyodide...
         </h2>
         <style>
           {`@keyframes spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }`}
@@ -170,29 +162,27 @@ if plt.get_fignums():
     );
   }
 
-  // 🔐 شاشة تسجيل الدخول
+  // Password screen
   if (!isAuthenticated) {
     return (
       <div style={{
         height: "100vh", display: "flex", justifyContent: "center",
         alignItems: "center", flexDirection: "column", background: "#0d1117", color: "#fff"
       }}>
-        <h2>🔐 Enter password to access</h2>
+        <h2>🔐 Enter Password to Access</h2>
         <input
           type="password"
+          placeholder="Enter your password..."
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={{ padding: "10px", borderRadius: "5px", marginTop: "10px" }}
+          style={{ padding: "10px", borderRadius: "5px", marginTop: "10px", width: "200px" }}
         />
         <button
           onClick={() => {
-            if (password === correctPassword) {
-              setIsAuthenticated(true);
-            } else {
-              alert("❌ Wrong password");
-            }
+            if (password === correctPassword) setIsAuthenticated(true);
+            else alert("❌ Wrong password");
           }}
-          style={{ marginTop: "10px", padding: "8px 15px" }}
+          style={{ marginTop: "10px", padding: "8px 15px", cursor: "pointer" }}
         >
           Login
         </button>
@@ -200,36 +190,12 @@ if plt.get_fignums():
     );
   }
 
-  // ✅ واجهة التطبيق بعد الدخول
+  // Main App UI
   return (
-    <div style={{ height: '100vh', fontFamily: 'Arial, sans-serif', display: 'flex', flexDirection: 'column', backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#e8f5ff' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', background: theme === 'vs-dark' ? 'linear-gradient(90deg, #007bff, #00ff99)' : 'linear-gradient(90deg, #0066cc, #00cc88)', color: '#fff', fontWeight: 'bold', fontSize: '1.3rem', boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
-        <span>⚡ AL-Code.AI</span>
-        <button onClick={() => setShowMenu(!showMenu)} style={{ padding: '8px 15px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: '#333', color: '#fff', fontWeight: '600' }}>
-          ⚙️ Menu
-        </button>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117', color: '#fff', fontFamily: 'JetBrains Mono, monospace' }}>
+      <header style={{ padding: '10px 20px', fontSize: '1.3rem', fontWeight: 'bold', background: '#161b22', boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
+        ⚡ AL-Code.AI
       </header>
-
-      {showMenu && (
-        <div style={{
-          position: 'absolute', top: '50px', right: '20px',
-          background: theme === 'vs-dark' ? '#1e1e1e' : '#fff',
-          borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-          padding: '10px', zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '8px'
-        }}>
-          <button onClick={runCode}>🚀 Run</button>
-          <button onClick={clearOutput}>🗑️ Clear</button>
-          <button onClick={restartApp}>🔄 Restart</button>
-          <button onClick={undoCode}>↩️ Undo</button>
-          <button onClick={redoCode}>↪️ Redo</button>
-          <button onClick={() => navigator.clipboard.writeText(code)}>📑 Copy Code</button>
-          <button onClick={() => navigator.clipboard.writeText(output)}>📋 Copy Output</button>
-          <button onClick={pasteCode}>📥 Paste</button>
-          <button onClick={() => setTheme(theme === 'vs-dark' ? 'light' : 'vs-dark')}>
-            {theme === 'vs-dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
-          </button>
-        </div>
-      )}
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '20px' }}>
         <div style={{ flex: 1, borderRadius: '10px', overflow: 'hidden' }}>
@@ -238,32 +204,29 @@ if plt.get_fignums():
             defaultLanguage="python"
             value={code}
             onChange={(v) => setCode(v || '')}
-            theme={theme}
+            theme="vs-dark"
             onMount={handleEditorMount}
             options={{
               fontSize: 16,
               minimap: { enabled: false },
               automaticLayout: true,
-              fontFamily: 'JetBrains Mono, monospace'
+              fontFamily: 'JetBrains Mono, monospace',
+              placeholder: 'Write your Python code here...'
             }}
           />
         </div>
 
-        <div style={{
-          flex: 1,
-          backgroundColor: theme === 'vs-dark' ? '#161b22' : '#fff',
-          borderRadius: '10px',
-          padding: '20px',
-          overflowY: 'auto'
-        }}>
-          <h3 style={{
-            fontSize: '1.1rem',
-            color: theme === 'vs-dark' ? '#00ff99' : '#007bff',
-            marginBottom: '10px'
-          }}>
-            Output:
-          </h3>
+        <div style={{ flex: 1, backgroundColor: '#161b22', borderRadius: '10px', padding: '20px', overflowY: 'auto' }}>
+          <h3 style={{ fontSize: '1.1rem', color: '#00ff99', marginBottom: '10px' }}>Output:</h3>
           <div dangerouslySetInnerHTML={{ __html: output }}></div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={runCode}>🚀 Run</button>
+          <button onClick={clearOutput}>🗑️ Clear</button>
+          <button onClick={restartApp}>🔄 Restart</button>
+          <button onClick={undoCode}>↩️ Undo</button>
+          <button onClick={redoCode}>↪️ Redo</button>
         </div>
       </div>
     </div>
