@@ -1,10 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="100%" height="100%">
   <defs>
+    <!-- تدرج خلفية متحرك -->
     <radialGradient id="bgGradient" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#41D1FF" />
-      <stop offset="100%" stop-color="#BD34FE" />
+      <stop offset="0%" stop-color="#FF5CFF">
+        <animate attributeName="stop-color" values="#FF5CFF;#41D1FF;#FF5CFF" dur="5s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#4100FF">
+        <animate attributeName="stop-color" values="#4100FF;#BD34FE;#4100FF" dur="5s" repeatCount="indefinite"/>
+      </stop>
+    </radialGradient>
+
+    <!-- توهج شعاعي -->
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="256" height="256" fill="url(#bgGradient)" />
-  <image href="logo.png" x="64" y="64" width="128" height="128" />
+
+  <!-- الخلفية -->
+  <rect width="256" height="256" rx="32" fill="url(#bgGradient)" />
+
+  <!-- دائرة متوهجة في المنتصف -->
+  <circle cx="128" cy="128" r="60" fill="url(#glow)">
+    <animate attributeName="r" values="55;65;55" dur="2s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- نص ديناميكي -->
+  <text x="128" y="140" text-anchor="middle" fill="white" font-size="24" font-family="sans-serif">
+    <tspan>
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+      LOGO
+    </tspan>
+  </text>
 </svg>
