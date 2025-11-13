@@ -3,7 +3,13 @@ import Editor from '@monaco-editor/react';
 import './index.css';
 
 function App() {
-  const initialCode = ``;
+  const initialCode = `import math
+
+# Example: ln(x)
+x = 10
+ln_x = math.log(x)   # natural logarithm
+print(f"ln({x}) = {ln_x}")
+`;
 
   // 🔐 Password protection states
   const [isAuthenticated, setIsAuthenticated] = useState(false);
