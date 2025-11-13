@@ -11,11 +11,12 @@ ln_x = math.log(x)   # natural logarithm
 print(f"ln({x}) = {ln_x}")
 `;
 
-  // 🔐 Password protection states
+  // 🔐 Password protection
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
-  const correctPassword = "med2025"; // 👈 change this to your chosen password
+  const correctPassword = "med2025"; // ⚠️ ضعها في متغير بيئي عند النشر
 
+  // ⚙️ App states
   const [code, setCode] = useState(initialCode);
   const [output, setOutput] = useState('');
   const [pyodide, setPyodide] = useState(null);
@@ -30,6 +31,7 @@ print(f"ln({x}) = {ln_x}")
   const undoCode = () => editorRef.current?.trigger('keyboard', 'undo', null);
   const redoCode = () => editorRef.current?.trigger('keyboard', 'redo', null);
 
+  // ✅ تحميل Pyodide
   useEffect(() => {
     const loadPyodide = async () => {
       try {
@@ -52,15 +54,21 @@ print(f"ln({x}) = {ln_x}")
     loadPyodide();
   }, []);
 
+  // 💾 تحميل الكود من التخزين المحلي
   useEffect(() => {
     const saved = localStorage.getItem('user_code');
     if (saved) setCode(saved);
   }, []);
 
+  // 💾 حفظ الكود تلقائيًا بعد 0.5 ثانية من آخر تعديل
   useEffect(() => {
-    localStorage.setItem('user_code', code);
+    const timeout = setTimeout(() => {
+      localStorage.setItem('user_code', code);
+    }, 500);
+    return () => clearTimeout(timeout);
   }, [code]);
 
+  // 🚀 تشغيل الكود
   const runCode = async () => {
     if (!pyodide) {
       setOutput(prev => prev + "⏳ Pyodide is still loading...\n");
@@ -84,10 +92,13 @@ plt.switch_backend('agg')
 
 ${code}
 
-buf = io.BytesIO()
-plt.savefig(buf, format='png')
-buf.seek(0)
-img_base64 = base64.b64encode(buf.read()).decode('utf-8')
+# ✅ Save image only if a figure exists
+img_base64 = None
+if plt.get_fignums():
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    img_base64 = base64.b64encode(buf.read()).decode('utf-8')
 `;
 
       await pyodide.runPythonAsync(wrappedCode);
@@ -116,8 +127,8 @@ img_base64 = base64.b64encode(buf.read()).decode('utf-8')
       );
     } finally {
       setExecuting(false);
-      pyodide.setStdout(window.console.log);
-      pyodide.setStderr(window.console.error);
+      pyodide.setStdout(null);
+      pyodide.setStderr(null);
     }
   };
 
@@ -128,7 +139,38 @@ img_base64 = base64.b64encode(buf.read()).decode('utf-8')
     catch (err) { console.error("Clipboard access failed:", err); }
   };
 
-  // 🔐 Password gate
+  // 🌀 شاشة التحميل (loading screen)
+  if (loading) {
+    return (
+      <div style={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        background: "linear-gradient(135deg, #0d1117, #1b2838)",
+        color: "#00ffcc",
+        fontFamily: "JetBrains Mono, monospace"
+      }}>
+        <div style={{
+          width: "70px",
+          height: "70px",
+          border: "6px solid rgba(255,255,255,0.2)",
+          borderTopColor: "#00ffcc",
+          borderRadius: "50%",
+          animation: "spin 1s linear infinite",
+        }} />
+        <h2 style={{ marginTop: "20px", fontWeight: "500", letterSpacing: "1px" }}>
+          🚀 Loading Pyodide environment...
+        </h2>
+        <style>
+          {`@keyframes spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }`}
+        </style>
+      </div>
+    );
+  }
+
+  // 🔐 شاشة تسجيل الدخول
   if (!isAuthenticated) {
     return (
       <div style={{
@@ -158,7 +200,7 @@ img_base64 = base64.b64encode(buf.read()).decode('utf-8')
     );
   }
 
-    // ✅ Main app after login
+  // ✅ واجهة التطبيق بعد الدخول
   return (
     <div style={{ height: '100vh', fontFamily: 'Arial, sans-serif', display: 'flex', flexDirection: 'column', backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#e8f5ff' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', background: theme === 'vs-dark' ? 'linear-gradient(90deg, #007bff, #00ff99)' : 'linear-gradient(90deg, #0066cc, #00cc88)', color: '#fff', fontWeight: 'bold', fontSize: '1.3rem', boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
