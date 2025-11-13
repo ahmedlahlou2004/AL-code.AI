@@ -8,6 +8,11 @@ plt.plot([1, 2, 3], [4, 5, 6])
 plt.title("رسم بياني تجريبي")
 plt.show()`;
 
+  // 🔐 Password protection states
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
+  const correctPassword = "med2025"; // 👈 change this to your chosen password
+
   const [code, setCode] = useState(initialCode);
   const [output, setOutput] = useState('');
   const [pyodide, setPyodide] = useState(null);
@@ -120,6 +125,37 @@ img_base64 = base64.b64encode(buf.read()).decode('utf-8')
     catch (err) { console.error("Clipboard access failed:", err); }
   };
 
+  // 🔐 Password gate
+  if (!isAuthenticated) {
+    return (
+      <div style={{
+        height: "100vh", display: "flex", justifyContent: "center",
+        alignItems: "center", flexDirection: "column", background: "#0d1117", color: "#fff"
+      }}>
+        <h2>🔐 Enter password to access</h2>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{ padding: "10px", borderRadius: "5px", marginTop: "10px" }}
+        />
+        <button
+          onClick={() => {
+            if (password === correctPassword) {
+              setIsAuthenticated(true);
+            } else {
+              alert("❌ Wrong password");
+            }
+          }}
+          style={{ marginTop: "10px", padding: "8px 15px" }}
+        >
+          Login
+        </button>
+      </div>
+    );
+  }
+
+    // ✅ Main app after login
   return (
     <div style={{ height: '100vh', fontFamily: 'Arial, sans-serif', display: 'flex', flexDirection: 'column', backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#e8f5ff' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', background: theme === 'vs-dark' ? 'linear-gradient(90deg, #007bff, #00ff99)' : 'linear-gradient(90deg, #0066cc, #00cc88)', color: '#fff', fontWeight: 'bold', fontSize: '1.3rem', boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
@@ -152,10 +188,36 @@ img_base64 = base64.b64encode(buf.read()).decode('utf-8')
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '20px' }}>
         <div style={{ flex: 1, borderRadius: '10px', overflow: 'hidden' }}>
-          <Editor height="100%" defaultLanguage="python" value={code} onChange={(v) => setCode(v || '')} theme={theme} onMount={handleEditorMount} options={{ fontSize: 16, minimap: { enabled: false }, automaticLayout: true, fontFamily: 'JetBrains Mono, monospace' }} />
+          <Editor
+            height="100%"
+            defaultLanguage="python"
+            value={code}
+            onChange={(v) => setCode(v || '')}
+            theme={theme}
+            onMount={handleEditorMount}
+            options={{
+              fontSize: 16,
+              minimap: { enabled: false },
+              automaticLayout: true,
+              fontFamily: 'JetBrains Mono, monospace'
+            }}
+          />
         </div>
-        <div style={{ flex: 1, backgroundColor: theme === 'vs-dark' ? '#161b22' : '#fff', borderRadius: '10px', padding: '20px', overflowY: 'auto' }}>
-          <h3 style={{ fontSize: '1.1rem', color: theme === 'vs-dark' ? '#00ff99' : '#007bff', marginBottom: '10px' }}>Output:</h3>
+
+        <div style={{
+          flex: 1,
+          backgroundColor: theme === 'vs-dark' ? '#161b22' : '#fff',
+          borderRadius: '10px',
+          padding: '20px',
+          overflowY: 'auto'
+        }}>
+          <h3 style={{
+            fontSize: '1.1rem',
+            color: theme === 'vs-dark' ? '#00ff99' : '#007bff',
+            marginBottom: '10px'
+          }}>
+            Output:
+          </h3>
           <div dangerouslySetInnerHTML={{ __html: output }}></div>
         </div>
       </div>
