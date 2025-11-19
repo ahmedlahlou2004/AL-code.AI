@@ -18,7 +18,7 @@ print(f"ln({x}) = {ln_x}")`;
   const [output, setOutput] = useState('');
   const [pyodide, setPyodide] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [executing, setExecuting] = useState(false);
   const [theme, setTheme] = useState('vs-dark');
   const [showMenu, setShowMenu] = useState(false);
@@ -28,7 +28,7 @@ print(f"ln({x}) = {ln_x}")`;
   const undoCode = () => editorRef.current?.trigger('keyboard', 'undo', null);
   const redoCode = () => editorRef.current?.trigger('keyboard', 'redo', null);
 
-  // تحميل الكود من localStorage
+  // Load code from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('user_code');
     if (saved) setCode(saved);
@@ -41,33 +41,35 @@ print(f"ln({x}) = {ln_x}")`;
     return () => clearTimeout(timeout);
   }, [code]);
 
-  // دالة تحميل Pyodide عند الطلب مع رسالة شريط التحميل
-  const loadPyodideOnDemand = async () => {
+  // Load Pyodide with progress
+  const loadPyodideWithProgress = async () => {
     if (window._pyodideInstance) {
       setPyodide(window._pyodideInstance);
       return;
     }
     setLoading(true);
-    setLoadingMessage('⏳ تحميل بيئة Pyodide...');
+    setLoadingProgress(0);
+
     try {
+      setLoadingProgress(10);
       const pyodideInstance = await window.loadPyodide({
         indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/',
       });
-      setLoadingMessage('🔄 تحميل الحزم: numpy, matplotlib, pandas...');
+      setLoadingProgress(50);
       await pyodideInstance.loadPackage(['numpy','matplotlib','pandas']);
+      setLoadingProgress(100);
       window._pyodideInstance = pyodideInstance;
       setPyodide(pyodideInstance);
     } catch (err) {
-      setOutput('⚠️ فشل تحميل Pyodide:\n' + err.message + '\n');
+      setOutput('⚠️ Failed to load Pyodide:\n' + err.message + '\n');
     } finally {
-      setLoading(false);
-      setLoadingMessage('');
+      setTimeout(() => { setLoading(false); setLoadingProgress(0); }, 500);
     }
   };
 
   const runCode = async () => {
-    if (!pyodide) await loadPyodideOnDemand();
-    if (!pyodide) return; // إذا فشل التحميل
+    if (!pyodide) await loadPyodideWithProgress();
+    if (!pyodide) return;
 
     setExecuting(true);
     let outputLines = [], errorLines = [];
@@ -158,14 +160,19 @@ if plt.get_fignums():
 
   return (
     <div style={{ height: '100vh', fontFamily: 'Arial, sans-serif', display: 'flex', flexDirection: 'column', backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#e8f5ff' }}>
-      {/* شريط التحميل */}
+      {/* Loading progress bar */}
       {loading && (
         <div style={{
-          position: 'fixed', top: 10, left: 0, width: '100%',
-          backgroundColor: '#333', color: '#fff', padding: '8px',
-          textAlign: 'center', borderRadius: '0 0 8px 8px', zIndex: 1000
+          position: 'fixed', top: 10, left: 0, width: '100%', height: '25px',
+          backgroundColor: '#ccc', borderRadius: '5px', zIndex: 1000
         }}>
-          {loadingMessage}
+          <div style={{
+            width: `${loadingProgress}%`,
+            height: '100%',
+            backgroundColor: '#4caf50',
+            borderRadius: '5px',
+            transition: 'width 0.3s'
+          }} />
         </div>
       )}
 
