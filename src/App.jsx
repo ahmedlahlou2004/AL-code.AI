@@ -18,6 +18,7 @@ print(f"ln({x}) = {ln_x}")`;
   const [output, setOutput] = useState('');
   const [pyodide, setPyodide] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [executing, setExecuting] = useState(false);
   const [theme, setTheme] = useState('vs-dark');
   const [showMenu, setShowMenu] = useState(false);
@@ -40,30 +41,32 @@ print(f"ln({x}) = {ln_x}")`;
     return () => clearTimeout(timeout);
   }, [code]);
 
-  // دالة لتحميل Pyodide عند الطلب
+  // دالة تحميل Pyodide عند الطلب مع رسالة شريط التحميل
   const loadPyodideOnDemand = async () => {
     if (window._pyodideInstance) {
       setPyodide(window._pyodideInstance);
       return;
     }
     setLoading(true);
+    setLoadingMessage('⏳ تحميل بيئة Pyodide...');
     try {
       const pyodideInstance = await window.loadPyodide({
         indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/',
       });
+      setLoadingMessage('🔄 تحميل الحزم: numpy, matplotlib, pandas...');
       await pyodideInstance.loadPackage(['numpy','matplotlib','pandas']);
       window._pyodideInstance = pyodideInstance;
       setPyodide(pyodideInstance);
     } catch (err) {
-      setOutput('⚠️ Failed to load Pyodide:\n' + err.message + '\n');
+      setOutput('⚠️ فشل تحميل Pyodide:\n' + err.message + '\n');
     } finally {
       setLoading(false);
+      setLoadingMessage('');
     }
   };
 
   const runCode = async () => {
     if (!pyodide) await loadPyodideOnDemand();
-
     if (!pyodide) return; // إذا فشل التحميل
 
     setExecuting(true);
@@ -141,16 +144,6 @@ if plt.get_fignums():
     }
   };
 
-  if (loading) {
-    return (
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: 'linear-gradient(135deg, #0d1117, #1b2838)', color: '#00ffcc', fontFamily: 'JetBrains Mono, monospace' }}>
-        <div style={{ width: '70px', height: '70px', border: '6px solid rgba(255,255,255,0.2)', borderTopColor: '#00ffcc', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-        <h2 style={{ marginTop: '20px', fontWeight: '500', letterSpacing: '1px' }}>🚀 Loading Pyodide environment...</h2>
-        <style>{`@keyframes spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }`}</style>
-      </div>
-    );
-  }
-
   if (!isAuthenticated) {
     return (
       <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', background: '#0d1117', color: '#fff' }}>
@@ -165,6 +158,17 @@ if plt.get_fignums():
 
   return (
     <div style={{ height: '100vh', fontFamily: 'Arial, sans-serif', display: 'flex', flexDirection: 'column', backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#e8f5ff' }}>
+      {/* شريط التحميل */}
+      {loading && (
+        <div style={{
+          position: 'fixed', top: 10, left: 0, width: '100%',
+          backgroundColor: '#333', color: '#fff', padding: '8px',
+          textAlign: 'center', borderRadius: '0 0 8px 8px', zIndex: 1000
+        }}>
+          {loadingMessage}
+        </div>
+      )}
+
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', background: theme === 'vs-dark' ? 'linear-gradient(90deg, #007bff, #00ff99)' : 'linear-gradient(90deg, #0066cc, #00cc88)', color: '#fff', fontWeight: 'bold', fontSize: '1.3rem', boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
         <span>⚡ AL-Code.AI</span>
         <button onClick={() => setShowMenu(!showMenu)} style={{ padding: '8px 15px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: '#333', color: '#fff', fontWeight: '600' }}>
