@@ -17,7 +17,7 @@ print(f"ln({x}) = {ln_x}")`;
   const [code, setCode] = useState(initialCode);
   const [output, setOutput] = useState('');
   const [pyodide, setPyodide] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [executing, setExecuting] = useState(false);
   const [theme, setTheme] = useState('vs-dark');
   const [showMenu, setShowMenu] = useState(false);
@@ -27,28 +27,7 @@ print(f"ln({x}) = {ln_x}")`;
   const undoCode = () => editorRef.current?.trigger('keyboard', 'undo', null);
   const redoCode = () => editorRef.current?.trigger('keyboard', 'redo', null);
 
-  useEffect(() => {
-    const loadPyodide = async () => {
-      try {
-        if (window._pyodideInstance) {
-          setPyodide(window._pyodideInstance);
-          setLoading(false);
-          return;
-        }
-        const pyodideInstance = await window.loadPyodide({
-          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/',
-        });
-        await pyodideInstance.loadPackage(['numpy', 'matplotlib', 'pandas']);
-        window._pyodideInstance = pyodideInstance;
-        setPyodide(pyodideInstance);
-        setLoading(false);
-      } catch (err) {
-        setOutput('⚠️ Failed to load Pyodide:\n' + err.message + '\n');
-      }
-    };
-    loadPyodide();
-  }, []);
-
+  // تحميل الكود من localStorage
   useEffect(() => {
     const saved = localStorage.getItem('user_code');
     if (saved) setCode(saved);
@@ -61,11 +40,31 @@ print(f"ln({x}) = {ln_x}")`;
     return () => clearTimeout(timeout);
   }, [code]);
 
-  const runCode = async () => {
-    if (!pyodide) {
-      setOutput((prev) => prev + '⏳ Pyodide is still loading...\n');
+  // دالة لتحميل Pyodide عند الطلب
+  const loadPyodideOnDemand = async () => {
+    if (window._pyodideInstance) {
+      setPyodide(window._pyodideInstance);
       return;
     }
+    setLoading(true);
+    try {
+      const pyodideInstance = await window.loadPyodide({
+        indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/',
+      });
+      await pyodideInstance.loadPackage(['numpy','matplotlib','pandas']);
+      window._pyodideInstance = pyodideInstance;
+      setPyodide(pyodideInstance);
+    } catch (err) {
+      setOutput('⚠️ Failed to load Pyodide:\n' + err.message + '\n');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const runCode = async () => {
+    if (!pyodide) await loadPyodideOnDemand();
+
+    if (!pyodide) return; // إذا فشل التحميل
 
     setExecuting(true);
     let outputLines = [], errorLines = [];
