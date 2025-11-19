@@ -28,7 +28,7 @@ print(f"ln({x}) = {ln_x}")`;
   const undoCode = () => editorRef.current?.trigger('keyboard', 'undo', null);
   const redoCode = () => editorRef.current?.trigger('keyboard', 'redo', null);
 
-  // Load saved code or code from share link
+  // Load code from share link or local storage
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const codeParam = params.get('code');
@@ -151,7 +151,7 @@ if plt.get_fignums():
 
   if (loading) {
     return (
-      <div style={{ height: '100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#0d1117', color:'#00ffcc', flexDirection:'column' }}>
+      <div style={{ height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#0d1117', color:'#00ffcc', flexDirection:'column' }}>
         <div style={{ width:'70px', height:'70px', border:'6px solid rgba(255,255,255,0.2)', borderTopColor:'#00ffcc', borderRadius:'50%', animation:'spin 1s linear infinite' }} />
         <p style={{marginTop:'20px'}}>🚀 Loading Pyodide {loadingProgress}%</p>
         <style>{`@keyframes spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }`}</style>
@@ -204,4 +204,12 @@ if plt.get_fignums():
           />
         </div>
         <div style={{flex:1, backgroundColor: theme==='vs-dark'?'#161b22':'#fff', borderRadius:'10px', padding:'20px', overflowY:'auto'}}>
-          <h3 style={{fontSize:'1.1rem', color: theme==='vs-dark'
+          <h3 style={{fontSize:'1.1rem', color: theme==='vs-dark'?'#00ff99':'#007bff', marginBottom:'10px'}}>Output:</h3>
+          <div dangerouslySetInnerHTML={{__html: output}}></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
