@@ -2,9 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import './index.css';
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-
 function App() {
   const initialCode = `import math
 
@@ -24,11 +21,6 @@ print(f"ln({x}) = {ln_x}")`;
   const [executing, setExecuting] = useState(false);
   const [theme, setTheme] = useState('vs-dark');
   const [showMenu, setShowMenu] = useState(false);
-
-  const [showGemini, setShowGemini] = useState(false);
-  const [geminiInput, setGeminiInput] = useState('');
-  const [geminiResult, setGeminiResult] = useState('');
-  const [geminiLoading, setGeminiLoading] = useState(false);
 
   const editorRef = useRef(null);
   const handleEditorMount = (editor) => (editorRef.current = editor);
@@ -76,8 +68,7 @@ print(f"ln({x}) = {ln_x}")`;
     }
 
     setExecuting(true);
-    let outputLines = [],
-      errorLines = [];
+    let outputLines = [], errorLines = [];
 
     pyodide.setStdout({ batched: (t) => outputLines.push(t.endsWith('\n') ? t : t + '\n') });
     pyodide.setStderr({ batched: (t) => errorLines.push(t.endsWith('\n') ? t : t + '\n') });
@@ -151,38 +142,6 @@ if plt.get_fignums():
     }
   };
 
-  const handleGeminiRequest = async (mode) => {
-    setGeminiLoading(true);
-    setGeminiResult('');
-
-    let prompt = '';
-    if (mode === 'write') {
-      prompt = 'اكتب كودًا ينفذ هذا الوصف:\n\n' + geminiInput;
-    } else if (mode === 'fix') {
-      prompt = 'صحح هذا الكود وأزل الأخطاء:\n\n' + geminiInput;
-    } else if (mode === 'explain') {
-      prompt = 'اشرح هذا الكود بشكل واضح:\n\n' + geminiInput;
-    }
-
-    try {
-      const res = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-        }),
-      });
-
-      const data = await res.json();
-      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || '❌ لا يوجد رد من Gemini';
-      setGeminiResult(reply);
-    } catch (err) {
-      setGeminiResult('❌ حدث خطأ أثناء الاتصال بـ Gemini:\n' + err.message);
-    } finally {
-      setGeminiLoading(false);
-    }
-  };
-
   if (loading) {
     return (
       <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: 'linear-gradient(135deg, #0d1117, #1b2838)', color: '#00ffcc', fontFamily: 'JetBrains Mono, monospace' }}>
@@ -205,7 +164,7 @@ if plt.get_fignums():
     );
   }
 
-    return (
+  return (
     <div style={{ height: '100vh', fontFamily: 'Arial, sans-serif', display: 'flex', flexDirection: 'column', backgroundColor: theme === 'vs-dark' ? '#0d1117' : '#e8f5ff' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', background: theme === 'vs-dark' ? 'linear-gradient(90deg, #007bff, #00ff99)' : 'linear-gradient(90deg, #0066cc, #00cc88)', color: '#fff', fontWeight: 'bold', fontSize: '1.3rem', boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
         <span>⚡ AL-Code.AI</span>
@@ -232,7 +191,6 @@ if plt.get_fignums():
           <button onClick={() => setTheme(theme === 'vs-dark' ? 'light' : 'vs-dark')}>
             {theme === 'vs-dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
           </button>
-          <button onClick={() => setShowGemini(true)}>🤖 Gemini Assistant</button>
         </div>
       )}
 
@@ -271,35 +229,6 @@ if plt.get_fignums():
           <div dangerouslySetInnerHTML={{ __html: output }}></div>
         </div>
       </div>
-
-      {showGemini && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center',
-          alignItems: 'center', zIndex: 9999
-        }}>
-          <div style={{
-            background: '#fff', padding: '20px', borderRadius: '10px',
-            width: '600px', maxHeight: '80vh', overflowY: 'auto'
-          }}>
-            <h2 style={{ marginBottom: '10px' }}>🤖 Gemini Assistant</h2>
-            <textarea
-              rows={6}
-              style={{ width: '100%', marginBottom: '10px' }}
-              placeholder="اكتب وصفًا أو كودًا هنا..."
-              value={geminiInput}
-              onChange={(e) => setGeminiInput(e.target.value)}
-            />
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-              <button onClick={() => handleGeminiRequest('write')}>✍️ كتابة الكود</button>
-              <button onClick={() => handleGeminiRequest('fix')}>🛠️ تصحيح الكود</button>
-              <button onClick={() => handleGeminiRequest('explain')}>🔍 شرح الكود</button>
-            </div>
-            {geminiLoading ? <p>⏳ جارٍ المعالجة...</p> : <pre>{geminiResult}</pre>}
-            <button onClick={() => setShowGemini(false)} style={{ marginTop: '10px' }}>❌ إغلاق</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
