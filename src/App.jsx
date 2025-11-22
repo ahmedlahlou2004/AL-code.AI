@@ -27,8 +27,15 @@ for i in range(1, 11):
   const redoCode = () => editorRef.current?.trigger('keyboard', 'redo', null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('user_code');
-    if (saved) setCode(saved);
+    const params = new URLSearchParams(window.location.search);
+    const codeParam = params.get('code');
+    if (codeParam) {
+      setIsAuthenticated(false);
+      setCode('');
+    } else {
+      const saved = localStorage.getItem('user_code');
+      if (saved) setCode(saved);
+    }
   }, []);
 
   useEffect(() => {
@@ -70,25 +77,19 @@ for i in range(1, 11):
     pyodide.setStderr({ batched: (t) => errorLines.push(t.endsWith('\n') ? t : t + '\n') });
 
     try {
-      const start = performance.now();
-      await pyodide.runPythonAsync(code);
-      const end = performance.now();
-      const time = (end - start).toFixed(2);
-      const sep = '<hr style="border:1px dashed #ccc; margin:10px 0;" />';
-      let resultHTML = '';
+      const wrappedCode = `${code}`;
+      await pyodide.runPythonAsync(wrappedCode);
 
-      if (errorLines.length) {
-        resultHTML = `<pre style="color:red; margin:0;">${errorLines.join('')}</pre>`;
-      } else if (outputLines.length) {
-        resultHTML = `<pre style="color:#007bff; margin:0;">${outputLines.join('')}</pre>`;
-      } else {
-        resultHTML = `<pre style="color:green; margin:0;">✅ Executed successfully.</pre>`;
-      }
-
-      setOutput(prev => prev + sep + resultHTML + `<p style="font-size:0.85rem; color:#555; margin:5px 0;">⏱ Execution time: ${time} ms</p>`);
-
+      setOutput((prev) =>
+        prev +
+        (errorLines.length
+          ? '❌ Execution Error:\n' + errorLines.join('') + `\n--- [ Error ] ---\n\n`
+          : (outputLines.join('') || '✅ Executed successfully.') + `\n`)
+      );
     } catch (err) {
-      setOutput(prev => prev + `<pre style="color:red;">❌ Unexpected Error:\n${err.message}</pre>`);
+      setOutput((prev) =>
+        prev + '\n❌ Unexpected Error:\n' + err.message + '\n--- [ Execution End ] ---\n\n'
+      );
     } finally {
       setExecuting(false);
       pyodide.setStdout(null);
@@ -103,9 +104,19 @@ for i in range(1, 11):
   const handleLogin = () => {
     if (password === correctPassword) {
       setIsAuthenticated(true);
+      const params = new URLSearchParams(window.location.search);
+      const codeParam = params.get('code');
+      if (codeParam) setCode(decodeURIComponent(codeParam));
     } else {
       alert('❌ Wrong password');
     }
+  };
+
+  const handleShare = () => {
+    const codeEncoded = encodeURIComponent(code);
+    const shareableLink = `${window.location.href}?code=${codeEncoded}`;
+    navigator.clipboard.writeText(shareableLink);
+    alert('Link copied to clipboard! The recipient will need the password to view the code.');
   };
 
   if (loading) {
@@ -120,35 +131,46 @@ for i in range(1, 11):
 
   if (!isAuthenticated) {
     return (
-      <div style={{ height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', flexDirection:'column', background:'#f0f8ff' }}>
-        <h2 style={{marginBottom:'10px'}}>🔐 Enter Password</h2>
-        <input
-          type="password"
-          value={password}
-          onChange={(e)=>setPassword(e.target.value)}
+      <div style={{ height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', flexDirection:'column', background:'#e8f5ff' }}>
+        <h2 style={{marginBottom:'10px'}}>🔐 Enter password to access</h2>
+        <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} 
           style={{
-            padding:'10px',
-            borderRadius:'8px',
-            border:'1px solid #ccc',
-            backgroundColor:'#fff',
-            width:'200px',
-            textAlign:'center'
-          }}
+            padding:'10px', 
+            borderRadius:'8px', 
+            border:'1px solid #ccc', 
+            width:'250px', 
+            textAlign:'center', 
+            fontSize:'1rem'
+          }} 
         />
-        <button onClick={handleLogin} style={{marginTop:'10px', padding:'8px 15px', borderRadius:'6px', cursor:'pointer', background:'#007bff', color:'#fff', border:'none'}}>Login</button>
+        <button onClick={handleLogin} 
+          style={{
+            marginTop:'15px', 
+            padding:'8px 20px', 
+            borderRadius:'8px', 
+            border:'none', 
+            background:'#007bff', 
+            color:'#fff', 
+            cursor:'pointer'
+          }}
+        >
+          Login
+        </button>
       </div>
     );
   }
 
   return (
     <div style={{height:'100vh', display:'flex', flexDirection:'column', fontFamily:'Arial', backgroundColor:'#f0f8ff'}}>
+
+      {/* HEADER */}
       <header
         style={{
           display:'flex',
           justifyContent:'space-between',
           alignItems:'center',
           padding:'10px 20px',
-          background: 'linear-gradient(90deg, #007bff, #00ff99)',
+          background: 'linear-gradient(90deg, #007bff, #00ccff)',
           color:'#fff',
           fontWeight:'bold',
           fontSize:'1.3rem',
@@ -156,6 +178,7 @@ for i in range(1, 11):
         }}
       >
         <span>⚡ AL-Code.AI</span>
+
         <button
           onClick={()=>setShowMenu(!showMenu)}
           style={{
@@ -173,19 +196,7 @@ for i in range(1, 11):
       </header>
 
       {showMenu && (
-        <div style={{
-          position:'absolute',
-          top:'50px',
-          right:'20px',
-          background:'#fff',
-          borderRadius:'8px',
-          boxShadow:'0 4px 15px rgba(0,0,0,0.3)',
-          padding:'10px',
-          zIndex:1000,
-          display:'flex',
-          flexDirection:'column',
-          gap:'8px'
-        }}>
+        <div style={{position:'absolute', top:'50px', right:'20px', background:'#fff', borderRadius:'8px', boxShadow:'0 4px 15px rgba(0,0,0,0.3)', padding:'10px', zIndex:1000, display:'flex', flexDirection:'column', gap:'8px'}}>
           <button onClick={runCode}>🚀 Run</button>
           <button onClick={clearOutput}>🗑️ Clear</button>
           <button onClick={restartApp}>🔄 Restart</button>
@@ -194,6 +205,7 @@ for i in range(1, 11):
           <button onClick={()=>navigator.clipboard.writeText(code)}>📑 Copy Code</button>
           <button onClick={()=>navigator.clipboard.writeText(output)}>📋 Copy Output</button>
           <button onClick={pasteCode}>📥 Paste</button>
+          <button onClick={handleShare}>🔗 Share Code (Password Protected)</button>
         </div>
       )}
 
@@ -204,12 +216,12 @@ for i in range(1, 11):
             defaultLanguage="python"
             value={code}
             onChange={(v)=>setCode(v||'')}
-            theme="vs-light"
+            theme="vs-dark"
             onMount={handleEditorMount}
             options={{fontSize:16, minimap:{enabled:false}, automaticLayout:true, fontFamily:'JetBrains Mono, monospace'}}
           />
         </div>
-        <div style={{flex:1, backgroundColor:'#fff', borderRadius:'10px', padding:'20px', overflowY:'auto'}}>
+        <div style={{flex:1, backgroundColor:'#e6f2ff', borderRadius:'10px', padding:'20px', overflowY:'auto'}}>
           <h3 style={{fontSize:'1.1rem', color:'#007bff', marginBottom:'10px'}}>Output:</h3>
           <div dangerouslySetInnerHTML={{__html: output}}></div>
         </div>
