@@ -7,10 +7,9 @@ const correctPassword = 'med2025';
 function App() {
   const initialCode = `import math
 
-# Example: ln(x)
-x = 10
-ln_x = math.log(x)
-print(f"ln({x}) = {ln_x}")`;
+# Natural logarithms from 1 to 10
+for i in range(1, 11):
+    print(f"ln({i}) = {math.log(i):.4f}")`;
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
@@ -72,42 +71,24 @@ print(f"ln({x}) = {ln_x}")`;
 
     try {
       const start = performance.now();
-      const wrappedCode = `
-import matplotlib.pyplot as plt
-import io, base64, sys
-
-plt.switch_backend('agg')
-
-${code}
-
-img_base64 = None
-if plt.get_fignums():
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    img_base64 = base64.b64encode(buf.read()).decode('utf-8')
-`;
-      await pyodide.runPythonAsync(wrappedCode);
+      await pyodide.runPythonAsync(code);
       const end = performance.now();
       const time = (end - start).toFixed(2);
-      const sep = '\n----------\n';
+      const sep = '<hr style="border:1px dashed #ccc; margin:10px 0;" />';
+      let resultHTML = '';
 
-      const img = pyodide.globals.get('img_base64');
-      const imageHTML = img
-        ? `<img src="data:image/png;base64,${img}" style="max-width:100%; border-radius:10px; margin-top:10px;" />`
-        : '';
+      if (errorLines.length) {
+        resultHTML = `<pre style="color:red; margin:0;">${errorLines.join('')}</pre>`;
+      } else if (outputLines.length) {
+        resultHTML = `<pre style="color:#007bff; margin:0;">${outputLines.join('')}</pre>`;
+      } else {
+        resultHTML = `<pre style="color:green; margin:0;">✅ Executed successfully.</pre>`;
+      }
 
-      setOutput((prev) =>
-        prev +
-        sep +
-        (errorLines.length
-          ? `<span style="color:#ff4d4d">❌ Execution Error:\n${errorLines.join('')}</span>\n--- [ Error in ${time} ms ] ---\n\n`
-          : `<span style="color:#00b894">${outputLines.join('') || '✅ Executed successfully.'}</span>\n⏱ Execution time: ${time} ms\n${imageHTML}\n----------\n\n`)
-      );
+      setOutput(prev => prev + sep + resultHTML + `<p style="font-size:0.85rem; color:#555; margin:5px 0;">⏱ Execution time: ${time} ms</p>`);
+
     } catch (err) {
-      setOutput((prev) =>
-        prev + '\n----------\n❌ Unexpected Error:\n' + err.message + '\n--- [ Execution End ] ---\n\n'
-      );
+      setOutput(prev => prev + `<pre style="color:red;">❌ Unexpected Error:\n${err.message}</pre>`);
     } finally {
       setExecuting(false);
       pyodide.setStdout(null);
@@ -127,17 +108,10 @@ if plt.get_fignums():
     }
   };
 
-  const handleShare = () => {
-    const codeEncoded = encodeURIComponent(code);
-    const shareableLink = `${window.location.href}?code=${codeEncoded}`;
-    navigator.clipboard.writeText(shareableLink);
-    alert('Link copied to clipboard! The recipient will need the password to view the code.');
-  };
-
   if (loading) {
     return (
-      <div style={{ height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#f5f7fa', color:'#00b894', flexDirection:'column' }}>
-        <div style={{ width:'70px', height:'70px', border:'6px solid rgba(0,0,0,0.1)', borderTopColor:'#00b894', borderRadius:'50%', animation:'spin 1s linear infinite' }} />
+      <div style={{ height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#0d1117', color:'#00ffcc', flexDirection:'column' }}>
+        <div style={{ width:'70px', height:'70px', border:'6px solid rgba(255,255,255,0.2)', borderTopColor:'#00ffcc', borderRadius:'50%', animation:'spin 1s linear infinite' }} />
         <p style={{marginTop:'20px'}}>🚀 Loading Pyodide {loadingProgress}%</p>
         <style>{`@keyframes spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }`}</style>
       </div>
@@ -146,60 +120,39 @@ if plt.get_fignums():
 
   if (!isAuthenticated) {
     return (
-      <div style={{ height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', flexDirection:'column', background:'linear-gradient(135deg, #e0f7fa, #c8e6c9)', color:'#333' }}>
-        <h2 style={{marginBottom:'15px'}}>🔐 Enter password to access</h2>
+      <div style={{ height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', flexDirection:'column', background:'#f0f8ff' }}>
+        <h2 style={{marginBottom:'10px'}}>🔐 Enter Password</h2>
         <input
           type="password"
           value={password}
           onChange={(e)=>setPassword(e.target.value)}
           style={{
-            padding:'12px 15px',
-            borderRadius:'10px',
-            border:'1px solid #a0d8ef',
-            outline:'none',
-            fontSize:'16px',
-            background:'rgba(255,255,255,0.8)',
-            color:'#333',
-            textAlign:'center',
-            boxShadow:'0 4px 12px rgba(0,0,0,0.1)',
-            backdropFilter: 'blur(5px)'
+            padding:'10px',
+            borderRadius:'8px',
+            border:'1px solid #ccc',
+            backgroundColor:'#fff',
+            width:'200px',
+            textAlign:'center'
           }}
         />
-        <button
-          onClick={handleLogin}
-          style={{
-            marginTop:'15px',
-            padding:'10px 20px',
-            borderRadius:'10px',
-            border:'none',
-            cursor:'pointer',
-            background:'rgba(0, 180, 148, 0.8)',
-            color:'#fff',
-            fontWeight:'600',
-            boxShadow:'0 4px 12px rgba(0,0,0,0.2)',
-            transition:'0.3s'
-          }}
-        >
-          Login
-        </button>
+        <button onClick={handleLogin} style={{marginTop:'10px', padding:'8px 15px', borderRadius:'6px', cursor:'pointer', background:'#007bff', color:'#fff', border:'none'}}>Login</button>
       </div>
     );
   }
 
   return (
-    <div style={{height:'100vh', display:'flex', flexDirection:'column', fontFamily:'Arial', backgroundColor:'#f5f7fa'}}>
-      {/* HEADER */}
+    <div style={{height:'100vh', display:'flex', flexDirection:'column', fontFamily:'Arial', backgroundColor:'#f0f8ff'}}>
       <header
         style={{
           display:'flex',
           justifyContent:'space-between',
           alignItems:'center',
           padding:'10px 20px',
-          background: 'linear-gradient(90deg, #4facfe, #00f2fe)',
+          background: 'linear-gradient(90deg, #007bff, #00ff99)',
           color:'#fff',
           fontWeight:'bold',
           fontSize:'1.3rem',
-          boxShadow:'0 2px 10px rgba(0,0,0,0.1)'
+          boxShadow:'0 2px 10px rgba(0,0,0,0.2)'
         }}
       >
         <span>⚡ AL-Code.AI</span>
@@ -207,10 +160,10 @@ if plt.get_fignums():
           onClick={()=>setShowMenu(!showMenu)}
           style={{
             padding:'8px 15px',
-            borderRadius:'8px',
+            borderRadius:'6px',
             border:'none',
             cursor:'pointer',
-            background:'rgba(255,255,255,0.2)',
+            background:'#333',
             color:'#fff',
             fontWeight:'600'
           }}
@@ -220,21 +173,32 @@ if plt.get_fignums():
       </header>
 
       {showMenu && (
-        <div style={{position:'absolute', top:'50px', right:'20px', background:'rgba(255,255,255,0.95)', borderRadius:'10px', boxShadow:'0 4px 15px rgba(0,0,0,0.1)', padding:'10px', zIndex:1000, display:'flex', flexDirection:'column', gap:'8px'}}>
-          <button onClick={runCode} style={{background:'#4facfe', color:'#fff'}}>🚀 Run</button>
-          <button onClick={clearOutput} style={{background:'#00b894', color:'#fff'}}>🗑️ Clear</button>
-          <button onClick={restartApp} style={{background:'#00b894', color:'#fff'}}>🔄 Restart</button>
-          <button onClick={undoCode} style={{background:'#aaa', color:'#fff'}}>↩️ Undo</button>
-          <button onClick={redoCode} style={{background:'#aaa', color:'#fff'}}>↪️ Redo</button>
-          <button onClick={()=>navigator.clipboard.writeText(code)} style={{background:'#4facfe', color:'#fff'}}>📑 Copy Code</button>
-          <button onClick={()=>navigator.clipboard.writeText(output)} style={{background:'#4facfe', color:'#fff'}}>📋 Copy Output</button>
-          <button onClick={pasteCode} style={{background:'#00b894', color:'#fff'}}>📥 Paste</button>
-          <button onClick={handleShare} style={{background:'#4facfe', color:'#fff'}}>🔗 Share Code</button>
+        <div style={{
+          position:'absolute',
+          top:'50px',
+          right:'20px',
+          background:'#fff',
+          borderRadius:'8px',
+          boxShadow:'0 4px 15px rgba(0,0,0,0.3)',
+          padding:'10px',
+          zIndex:1000,
+          display:'flex',
+          flexDirection:'column',
+          gap:'8px'
+        }}>
+          <button onClick={runCode}>🚀 Run</button>
+          <button onClick={clearOutput}>🗑️ Clear</button>
+          <button onClick={restartApp}>🔄 Restart</button>
+          <button onClick={undoCode}>↩️ Undo</button>
+          <button onClick={redoCode}>↪️ Redo</button>
+          <button onClick={()=>navigator.clipboard.writeText(code)}>📑 Copy Code</button>
+          <button onClick={()=>navigator.clipboard.writeText(output)}>📋 Copy Output</button>
+          <button onClick={pasteCode}>📥 Paste</button>
         </div>
       )}
 
       <div style={{flex:1, display:'flex', flexDirection:'column', padding:'20px', gap:'20px'}}>
-        <div style={{flex:1, borderRadius:'10px', overflow:'hidden', boxShadow:'0 4px 15px rgba(0,0,0,0.05)'}}>
+        <div style={{flex:1, borderRadius:'10px', overflow:'hidden'}}>
           <Editor
             height="100%"
             defaultLanguage="python"
@@ -245,8 +209,8 @@ if plt.get_fignums():
             options={{fontSize:16, minimap:{enabled:false}, automaticLayout:true, fontFamily:'JetBrains Mono, monospace'}}
           />
         </div>
-        <div style={{flex:1, backgroundColor:'#ffffff', borderRadius:'10px', padding:'20px', overflowY:'auto', boxShadow:'0 4px 15px rgba(0,0,0,0.05)'}}>
-          <h3 style={{fontSize:'1.1rem', color:'#4facfe', marginBottom:'10px'}}>Output:</h3>
+        <div style={{flex:1, backgroundColor:'#fff', borderRadius:'10px', padding:'20px', overflowY:'auto'}}>
+          <h3 style={{fontSize:'1.1rem', color:'#007bff', marginBottom:'10px'}}>Output:</h3>
           <div dangerouslySetInnerHTML={{__html: output}}></div>
         </div>
       </div>
