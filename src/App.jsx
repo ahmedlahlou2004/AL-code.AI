@@ -20,9 +20,6 @@ print(f"ln({x}) = {ln_x}")`;
   const [loading, setLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [executing, setExecuting] = useState(false);
-  const [theme, setTheme] = useState(
-    localStorage.getItem("theme") || "vs-dark"
-  );
   const [showMenu, setShowMenu] = useState(false);
 
   const editorRef = useRef(null);
@@ -31,9 +28,6 @@ print(f"ln({x}) = {ln_x}")`;
   const redoCode = () => editorRef.current?.trigger("keyboard", "redo", null);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) setTheme(savedTheme);
-
     const savedCode = localStorage.getItem("user_code");
     if (savedCode) setCode(savedCode);
   }, []);
@@ -42,10 +36,6 @@ print(f"ln({x}) = {ln_x}")`;
     const timeout = setTimeout(() => localStorage.setItem("user_code", code), 500);
     return () => clearTimeout(timeout);
   }, [code]);
-
-  useEffect(() => {
-    localStorage.setItem("theme", theme);
-  }, [theme]);
 
   const loadPyodideWithProgress = async () => {
     if (window._pyodideInstance) {
@@ -226,7 +216,7 @@ if plt.get_fignums():
         display: "flex",
         flexDirection: "column",
         fontFamily: "Arial",
-        backgroundColor: theme === "vs-dark" ? "#0d1117" : "#e8f5ff",
+        backgroundColor: "#0d1117",
       }}
     >
       {/* HEADER */}
@@ -236,10 +226,7 @@ if plt.get_fignums():
           justifyContent: "space-between",
           alignItems: "center",
           padding: "10px 20px",
-          background:
-            theme === "vs-dark"
-              ? "linear-gradient(90deg, #007bff, #00ff99)"
-              : "linear-gradient(90deg, #0066cc, #00cc88)",
+          background: "linear-gradient(90deg, #007bff, #00ff99)",
           color: "#fff",
           fontWeight: "bold",
           fontSize: "1.3rem",
@@ -247,16 +234,6 @@ if plt.get_fignums():
         }}
       >
         <span>⚡ AL-Code.AI</span>
-
-        {/* 🌙/☀️  زر تغيير الثيم */}
-        <label className="switch" style={{ marginRight: "15px" }}>
-          <input
-            type="checkbox"
-            checked={theme === "vs-dark"}
-            onChange={() => setTheme(theme === "vs-dark" ? "light" : "vs-dark")}
-          />
-          <span className="slider"></span>
-        </label>
 
         <button
           onClick={() => setShowMenu(!showMenu)}
@@ -280,7 +257,7 @@ if plt.get_fignums():
             position: "absolute",
             top: "50px",
             right: "20px",
-            background: theme === "vs-dark" ? "#1e1e1e" : "#fff",
+            background: "#1e1e1e",
             borderRadius: "8px",
             boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
             padding: "10px",
@@ -298,9 +275,6 @@ if plt.get_fignums():
           <button onClick={() => navigator.clipboard.writeText(code)}>📑 Copy Code</button>
           <button onClick={() => navigator.clipboard.writeText(output)}>📋 Copy Output</button>
           <button onClick={pasteCode}>📥 Paste</button>
-          <button onClick={() => setTheme(theme === "vs-dark" ? "light" : "vs-dark")}>
-            {theme === "vs-dark" ? "☀️ Light Mode" : "🌙 Dark Mode"}
-          </button>
           <button onClick={handleShare}>🔗 Share Code (Password Protected)</button>
         </div>
       )}
@@ -312,7 +286,7 @@ if plt.get_fignums():
             defaultLanguage="python"
             value={code}
             onChange={(v) => setCode(v || "")}
-            theme={theme}
+            theme="vs-dark"
             onMount={handleEditorMount}
             options={{ fontSize: 16, minimap: { enabled: false }, automaticLayout: true, fontFamily: "JetBrains Mono, monospace" }}
           />
@@ -320,13 +294,13 @@ if plt.get_fignums():
         <div
           style={{
             flex: 1,
-            backgroundColor: theme === "vs-dark" ? "#161b22" : "#fff",
+            backgroundColor: "#161b22",
             borderRadius: "10px",
             padding: "20px",
             overflowY: "auto",
           }}
         >
-          <h3 style={{ fontSize: "1.1rem", color: theme === "vs-dark" ? "#00ff99" : "#007bff", marginBottom: "10px" }}>Output:</h3>
+          <h3 style={{ fontSize: "1.1rem", color: "#00ff99", marginBottom: "10px" }}>Output:</h3>
           <div dangerouslySetInnerHTML={{ __html: output }}></div>
         </div>
       </div>
