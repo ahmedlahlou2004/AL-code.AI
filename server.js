@@ -1,30 +1,27 @@
+// server.js
 import express from "express";
-import { spawn } from "child_process";
+import { exec } from "child_process";
 
 const app = express();
 app.use(express.json());
 
+// نقطة نهاية عامة: /generate أو /fix أو /explain
 app.post("/:action", (req, res) => {
   const { code } = req.body;
   const action = req.params.action;
 
-  const ollama = spawn("ollama", ["run", "deepseek-coder"]);
+  // نرسل الطلب مباشرة كـ prompt
+  const prompt = `${action} this code:\n${code}`;
 
-  let output = "";
-
-  ollama.stdout.on("data", (data) => {
-    output += data.toString();
-  });
-
-  ollama.stderr.on("data", (data) => {
-    console.error("Error from Ollama:", data.toString());
-  });
-
-  ollama.stdin.write(`${action} this code:\n${code}\n`);
-  ollama.stdin.end();
-
-  ollama.on("close", () => {
-    res.json({ answer: output.trim() });
+  exec(`ollama run deepseek-coder --prompt "${prompt}"`, (error, stdout, stderr) => {
+    if (error) {
+      console.error("Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+    if (stderr) {
+      console.error("Stderr:", stderr);
+    }
+    res.json({ answer: stdout.trim() });
   });
 });
 
