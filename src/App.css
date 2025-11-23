@@ -30,19 +30,24 @@ function App() {
     }
 
     setExecuting(true);
-    let outputText = '';
-
-    pyodide.setStdout({
-      batched: (text) => {
-        outputText += text;
-      },
-    });
+    setOutput(''); // تفريغ الإخراج قبل التنفيذ
 
     try {
-      await pyodide.runPythonAsync(code);
-      setOutput(outputText.trim() || "✅ Code executed successfully, but no output.");
+      // تحويل stdout إلى string
+      const result = await pyodide.runPythonAsync(`
+import sys
+from io import StringIO
+_stdout = StringIO()
+sys.stdout = _stdout
+sys.stderr = _stdout
+
+${code}
+
+_stdout.getvalue()
+      `);
+      setOutput(result || "✅ Code executed successfully, but no output.");
     } catch (err) {
-      setOutput("❌ Execution error:\n" + err.message);
+      setOutput("❌ Execution error:\n" + (err.message || err));
     } finally {
       setExecuting(false);
     }
