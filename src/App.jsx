@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
+import AIEditor from "./AIEditor"; // إضافة AIEditor
 import './index.css';
 
 const correctPassword = 'med2025';
@@ -221,9 +222,16 @@ for i in range(1, 11):
             options={{fontSize:16, minimap:{enabled:false}, automaticLayout:true, fontFamily:'JetBrains Mono, monospace'}}
           />
         </div>
+
         <div style={{flex:1, backgroundColor:'#e6f2ff', borderRadius:'10px', padding:'20px', overflowY:'auto'}}>
           <h3 style={{fontSize:'1.1rem', color:'#007bff', marginBottom:'10px'}}>Output:</h3>
           <div dangerouslySetInnerHTML={{__html: output}}></div>
+        </div>
+
+        {/* إضافة AIEditor */}
+        <div style={{marginTop:'20px', borderTop:'2px solid #007bff', paddingTop:'10px'}}>
+          <h3 style={{fontSize:'1.1rem', color:'#007bff', marginBottom:'10px'}}>AI Assistant:</h3>
+          <AIEditor />
         </div>
       </div>
     </div>
