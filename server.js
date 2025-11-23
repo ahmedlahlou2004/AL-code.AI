@@ -1,11 +1,9 @@
 import express from "express";
-import bodyParser from "body-parser";
 import { spawn } from "child_process";
 
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json());
 
-// endpoint عام: /generate أو /fix أو /explain
 app.post("/:action", (req, res) => {
   const { code } = req.body;
   const action = req.params.action;
@@ -13,16 +11,20 @@ app.post("/:action", (req, res) => {
   const ollama = spawn("ollama", ["run", "deepseek-coder"]);
 
   let output = "";
-  ollama.stdout.on("data", data => {
+
+  ollama.stdout.on("data", (data) => {
     output += data.toString();
   });
 
-  // نرسل الطلب للنموذج
+  ollama.stderr.on("data", (data) => {
+    console.error("Error from Ollama:", data.toString());
+  });
+
   ollama.stdin.write(`${action} this code:\n${code}\n`);
   ollama.stdin.end();
 
   ollama.on("close", () => {
-    res.json({ answer: output });
+    res.json({ answer: output.trim() });
   });
 });
 
